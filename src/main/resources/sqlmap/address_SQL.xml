@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.mapper.AddressMapper">
+	<select id = "privateAddressList" parameterType="string" resultType="addressVO">
+		select * from address where emp_id = #{empId}
+	</select>
+
+	<select id = "empList" resultType="empVO">
+		select *
+		from employees
+		where emp_state = '재직중'
+	</select>
+	
+	<update id = "addrUpdate" parameterType="addressVO">
+		update address 
+		set addr_type = #{addrType} 
+		, ADDR_NAME = #{addrName}
+		, ADDR_TEL = #{addrTel} 
+		, ADDR_MAIL = #{addrMail} 
+		, ADDR_ADD1 = #{addrAdd1} 
+		, ADDR_ADD2 = #{addrAdd2}
+		where addr_nm = #{addrNm} 
+	</update>
+	
+	<delete id = "addrDelete" parameterType="int">
+		delete address where addr_nm = #{addrNm}
+	</delete>
+	
+	<insert id = "addrInsert" parameterType="addressVO">
+		insert into address(EMP_ID, ADDR_TYPE, ADDR_NAME, ADDR_TEL, ADDR_MAIL, ADDR_ADD1, ADDR_ADD2, ADDR_NM) 
+		values (#{empId}, #{addrType}, #{addrName}, #{addrTel}, #{addrMail}, #{addrAdd1}, #{addrAdd2}, ADDR_SEQ.NEXTVAL)
+	</insert>
+</mapper>

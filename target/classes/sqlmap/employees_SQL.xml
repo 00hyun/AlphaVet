@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.mapper.EmployeesMapper">
+
+	<select id="EmployeesMapper_empList" resultType="empVO">
+		select
+			EMP_ID,
+			MANAGER_ID     ,
+			CLI_CD         ,
+			ANIMAL_CD      ,
+			EMP_JOB        ,
+			EMP_NAME,
+			EMP_TEL        ,
+			EMP_ZIPCODE    ,
+			EMP_ADD1       ,
+			EMP_ADD2       ,
+			to_char(EMP_JOIN_DATE, 'yyyy-MM-dd') AS EMP_JOIN_DATE,
+			EMP_RETIRE_DATE,
+			EMP_STATE      ,
+			EMP_BIRTH      ,
+			EMP_PW         ,
+			EMP_CURRENT    ,
+			EMP_MAIL       ,
+			EMP_PROFILE
+		from employees
+		where cli_cd = 'h001'
+		and emp_state = '재직중'
+	</select>
+
+	<select id="EmployeesMapper_empList2" resultType="empVO">
+		select
+			nvl2(nullif(emp_state, '퇴사'), emp_id, REGEXP_REPLACE(EMP_ID, '[^.$]', '*')) AS EMP_ID,
+			MANAGER_ID     ,
+			CLI_CD         ,
+			ANIMAL_CD      ,
+			nvl2(nullif(emp_state, '퇴사'), EMP_JOB, REGEXP_REPLACE(EMP_JOB, '[^.$]', '*')) AS EMP_JOB        ,
+			EMP_NAME,
+			nvl2(nullif(emp_state, '퇴사'), EMP_TEL, REGEXP_REPLACE(EMP_TEL, '[^.$]', '*')) AS EMP_TEL        ,
+			nvl2(nullif(emp_state, '퇴사'), EMP_ZIPCODE, REGEXP_REPLACE(EMP_ZIPCODE, '[^.$]', '*')) AS EMP_ZIPCODE    ,
+			nvl2(nullif(emp_state, '퇴사'), EMP_ADD1, REGEXP_REPLACE(EMP_ADD1, '[^.$]', '*')) AS EMP_ADD1       ,
+			nvl2(nullif(emp_state, '퇴사'), EMP_ADD2, REGEXP_REPLACE(EMP_ADD2, '[^.$]', '*')) AS EMP_ADD2       ,
+			nvl2(nullif(emp_state, '퇴사'), to_char(EMP_JOIN_DATE, 'yyyy-MM-dd'), REGEXP_REPLACE(to_char(EMP_JOIN_DATE, 'yyyy-MM-dd'), '[^.$]', '*')) AS EMP_JOIN_DATE,
+			EMP_RETIRE_DATE,
+			EMP_STATE      ,
+			EMP_BIRTH      ,
+			EMP_PW         ,
+			EMP_CURRENT    ,
+			EMP_MAIL       ,
+			EMP_PROFILE
+		from employees
+		where cli_cd = 'h001'
+		order by emp_state
+	</select>
+
+	<insert id="insertEmp" parameterType="empVO" useGeneratedKeys="true">
+		<selectKey keyProperty="empId" order="BEFORE" resultType="String">
+			SELECT employees_seq.nextval from dual
+		</selectKey>
+		insert into employees(
+			EMP_ID, MANAGER_ID, CLI_CD, ANIMAL_CD, EMP_JOB, EMP_NAME, EMP_PROFILE, EMP_TEL, EMP_ZIPCODE, 
+			EMP_ADD1, EMP_ADD2, EMP_JOIN_DATE, EMP_STATE, EMP_BIRTH, EMP_PW, EMP_MAIL, EMP_CURRENT
+		) values(
+			#{cliCd}||'-e00'||#{empId}, #{managerId}, #{cliCd}, #{animalCd}, #{empJob}, #{empName}, #{empProfile}, #{empTel}, #{empZipcode},
+			#{empAdd1}, #{empAdd2}, #{empJoinDate}, '재직중', #{empBirth}, #{empPw}, #{empMail}, 'O'
+		)
+	</insert>
+
+<!-- 
+	<select id="selectEmp" parameterType="string" resultType="empVO">
+		select 
+			EMP_ID         ,
+			MANAGER_ID     ,
+			CLI_CD         ,
+			ANIMAL_CD      ,
+			EMP_JOB        ,
+			EMP_NAME       ,
+			EMP_PROFILE    ,
+			EMP_TEL        ,
+			EMP_ZIPCODE    ,
+			EMP_ADD1       ,
+			EMP_ADD2       ,
+			to_char(EMP_JOIN_DATE, 'yyyy-mm-dd') as EMP_JOIN_DATE,
+			EMP_RETIRE_DATE,
+			EMP_STATE      ,
+			to_char(EMP_BIRTH, 'yyyy-mm-dd') as EMP_BIRTH ,
+			EMP_PW
+		from employees
+		where emp_id = #{empId}
+	</select>
+-->
+	
+	<insert id="updateEmp" parameterType="empVO">
+		update employees 
+		set
+			ANIMAL_CD=#{animalCd},
+			EMP_JOB=#{empJob},
+			EMP_NAME=#{empName},
+			EMP_PROFILE=#{empProfile},
+			EMP_TEL=TO_NUMBER(#{empTel}),
+			EMP_ZIPCODE=#{empZipcode},
+			EMP_ADD1=#{empAdd1},
+			EMP_ADD2=#{empAdd2},
+			EMP_JOIN_DATE=#{empJoinDate},
+			EMP_BIRTH=#{empBirth},
+			EMP_PW=#{empPw},
+			EMP_MAIL=#{empMail}
+		where EMP_ID=#{empId}
+	</insert>
+
+	<delete id="deleteEmp" parameterType="string">
+		delete from employees
+		where emp_id = #{empId}
+	</delete>
+	
+	<resultMap type="empVO" id="empDetailMap">
+		<result property="empId" column="EMP_ID"/>
+		<result property="managerId" column="MANAGER_ID"/>
+		<result property="cliCd" column="CLI_CD"/>
+		<result property="animalCd" column="ANIMAL_CD"/>
+		<result property="empJob" column="EMP_JOB"/>
+		<result property="empName" column="EMP_NAME"/>
+		<result property="empProfile" column="EMP_PROFILE"/>
+		<result property="empTel" column="EMP_TEL"/>
+		<result property="empZipcode" column="EMP_ZIPCODE"/>
+		<result property="empMail" column="EMP_MAIL"/>
+		<result property="empAdd1" column="EMP_ADD1"/>
+		<result property="empAdd2" column="EMP_ADD2"/>
+		<result property="empJoinDate" column="EMP_JOIN_DATE"/>
+		<result property="empRetireDate" column="EMP_RETIRE_DATE"/>
+		<result property="empState" column="EMP_STATE"/>
+		<result property="empBirth" column="EMP_BIRTH"/>
+		<result property="empPw" column="EMP_PW"/>
+		<collection property="empAuthVOList" resultMap="empAuthMap"></collection>
+	</resultMap>
+	<resultMap type="empAuthVO" id="empAuthMap">
+		<result property="empId" column="EMP_ID"/>
+		<result property="empAuthName" column="EMP_AUTH_NAME"/>
+	</resultMap>
+	<select id="selectEmp" parameterType="string" resultMap="empDetailMap">
+		select 
+			a.EMP_ID,
+			a.EMP_PW,
+			a.MANAGER_ID,
+			a.CLI_CD,
+			a.ANIMAL_CD,
+			a.EMP_JOB,
+			a.EMP_NAME,
+			a.EMP_PROFILE,
+			a.EMP_TEL,
+			a.EMP_ZIPCODE,
+			a.EMP_ADD1,
+			a.EMP_ADD2,
+			a.EMP_MAIL,
+			to_char(EMP_JOIN_DATE, 'yyyy-mm-dd') as EMP_JOIN_DATE,
+			to_char(a.EMP_RETIRE_DATE, 'yyyy-mm-dd') as EMP_RETIRE_DATE,
+			a.EMP_STATE,
+			to_char(EMP_BIRTH, 'yyyy-mm-dd') as EMP_BIRTH,
+			b.emp_auth_name
+		from employees a, emp_auth b
+		where a.EMP_ID = b.EMP_ID
+		and a.EMP_ID = #{empId}
+	</select>
+	
+	<select resultType="empVO" parameterType="string" id="selectDoctor">
+		SELECT * FROM EMPLOYEES
+		WHERE EMP_ID = #{empId}
+	</select>
+
+	<select id="EmployeesMapper_empListByAnimalCd" parameterType="string" resultType="empVO">
+		SELECT EMP_ID, EMP_NAME
+		FROM EMPLOYEES
+		WHERE ANIMAL_CD = #{animalCd}
+		and emp_state = '재직중'
+	</select>
+
+	<select id="EmployeesMapper_searchEmpName" parameterType="string" resultType="map">
+		SELECT EMP_ID, EMP_NAME, EMP_PROFILE
+		FROM EMPLOYEES
+		WHERE EMP_NAME LIKE '%'||#{empName}||'%'
+	</select>
+	
+	<update id="EmployeesMapper_updateEmpCurrent" parameterType="map">
+		UPDATE
+			EMPLOYEES
+		SET
+			EMP_CURRENT = #{empCurrent}
+		WHERE
+			EMP_ID = #{empId}
+	</update>
+	
+	<select id="EmployeesMapper_selectEmpId" parameterType="map" resultType="string">
+		SELECT
+			EMP_ID
+		FROM
+			EMPLOYEES
+		WHERE
+			EMP_NAME = #{empName}
+		AND
+			EMP_TEL = #{empTel}
+	</select>
+	
+	<select id="EmployeesMapper_selectEmpPassword" parameterType="map" resultType="string">
+		SELECT
+			EMP_PW
+		FROM
+			EMPLOYEES
+		WHERE
+			EMP_ID = #{empId}
+		AND
+			EMP_MAIL = #{empMail}
+	</select>
+	
+	<update id="EmployeesMapper_updateEmpPassword" parameterType="map">
+		UPDATE
+			EMPLOYEES
+		SET
+			EMP_PW = #{empPw}
+		WHERE
+			EMP_ID = #{empId}
+	</update>
+	
+	<update id="EmployeesMapper_updateEmpState" parameterType="map">
+		UPDATE
+			EMPLOYEES
+		SET
+			EMP_STATE = #{empState}
+		WHERE
+			EMP_ID = #{empId}
+	</update>
+
+	<update id="EmployeesMapper_updateRetireDate" parameterType="string">
+		UPDATE EMPLOYEES
+		SET 
+			EMP_RETIRE_DATE = to_date(#{empRetireDate}, 'yyyy/MM/dd')
+		WHERE EMP_ID = #{empId}
+	</update>
+</mapper>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.mapper.DocFileMapper">
+
+	<select resultType="map" parameterType="string" id="selectDiagnosisList">
+		SELECT RC.REC_NM,
+		       PT.PAT_NAME,
+		       P.PRA_DATE
+		FROM PATIENT PT
+		     INNER JOIN RECEIPT RC
+		     ON RC.PAT_ID=PT.PAT_ID
+		     INNER JOIN PRA P
+		     ON P.REC_NM=RC.REC_NM
+		     INNER JOIN DOC_FILE DF
+		     ON DF.PRA_CD=P.PRA_CD
+		WHERE P.EMP_ID=#{empId}
+		      AND DF.DF_STATUS=1
+		ORDER BY REC_NM DESC
+	</select>
+
+	<insert parameterType="string" id="insertDocFile">
+		INSERT INTO DOC_FILE( DOC_DT_NM, PRA_CD )
+		
+		VALUES(
+			(
+				SELECT DOC_DT_NM FROM DOC_DETAIL
+				WHERE PRA_CD=#{praCd}
+			),
+			#{praCd}
+		)
+	</insert>
+	
+	<update parameterType="map" id="updateDocFile">
+		UPDATE DOC_FILE
+		SET DF_STATUS=2,
+			DF_BREED=#{dfBreed},
+			DF_FUR_COLOR=#{dfFurColor},
+			DF_FEATURE=#{dfFeature},
+			DF_OUT_BREAK=#{dfOutBreak},
+			DF_PROGNOSIS=#{dfPrognosis},
+			DF_ETC=#{dfEtc}
+		WHERE PRA_CD=#{praCd}
+	</update>
+
+</mapper>

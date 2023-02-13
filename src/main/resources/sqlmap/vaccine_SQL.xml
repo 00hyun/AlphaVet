@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.mapper.VaccineMapper">
+
+	<select resultType="VaccineMedicVO" parameterType="string" id="selectVaccineList">
+		SELECT * FROM VACCINE
+		WHERE PAT_ID=#{patId}
+	</select>
+	
+	<insert id="insertVaccine">
+		INSERT INTO VACCINE( PAT_ID, VACCINE_NAME, VACCINE_DATE, VD_NM, PRA_CD )
+		    
+		VALUES(
+			(
+				SELECT PAT_ID FROM PRA
+				WHERE REC_NM=#{recNm}
+				      AND EMP_ID=#{empId}
+			),
+			#{vdName},
+			SYSDATE,
+			#{vdNm},
+			(
+				SELECT PRA_CD FROM PRA
+				WHERE REC_NM=#{recNm}
+				      AND EMP_ID=#{empId}
+			)
+		)
+	</insert>
+
+	<update parameterType="map" id="mergeVaccine">
+		MERGE INTO VACCINE VC
+
+		USING (
+		    SELECT PA.*
+		    FROM RECEIPT RC
+		    INNER JOIN PRA PA
+		          ON PA.REC_NM=RC.REC_NM
+		    INNER JOIN PATIENT PT
+		          ON RC.PAT_ID=PT.PAT_ID
+		    WHERE RC.REC_STATUS='진료중'
+		          AND TO_CHAR(RC.REC_DATE)=TO_CHAR(SYSDATE)
+		          AND TO_CHAR(PA.PRA_DATE)=TO_CHAR(SYSDATE)
+		          AND PA.EMP_ID=#{empId}
+		) P
+		    ON (
+		        VC.VD_NM=#{vdNm}
+		        AND VC.PAT_ID=P.PAT_ID
+		    )
+		
+		WHEN MATCHED THEN
+		     UPDATE
+		        SET VC.VACCINE_DATE=SYSDATE,
+		            VC.VACCINE_COUNT=VC.VACCINE_COUNT+1
+		        
+		WHEN NOT MATCHED THEN
+		     INSERT(
+		     	VC.PAT_ID, VC.VACCINE_NAME, VC.VACCINE_DATE, VC.VD_NM, VC.PRA_CD
+		     )
+		    
+		     VALUES( P.PAT_ID, #{vdName}, SYSDATE, #{vdNm}, P.PRA_CD )
+	</update>
+
+</mapper>

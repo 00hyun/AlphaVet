@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.mapper.AppContentMapper">
+
+	<select id="appContentList" parameterType="string" resultType="petBoardVO">
+		select * from app_board
+		where ab_type=#{abType}
+	</select>
+	
+	<select id="contentRead" parameterType="int" resultType="petBoardVO">
+		select * from app_board
+		where ab_nm = #{abNm}
+	</select>
+	
+	<!-- 조회수 증가 -->
+	<update id="cntHitUp" parameterType="int">
+		update app_board
+		set ab_hit_cnt = ab_hit_cnt +1
+		where ab_nm = #{abNm}
+	</update>
+
+	<!-- 좋아요 등록 -->
+	<insert id="registerLike" parameterType="appLikeVO">
+		insert into app_like(ab_nm, user_id
+		)
+ 	 	values(
+ 		#{abNm}, #{userId}
+ 		)
+	</insert>
+	
+	<!-- 좋아요 취소 -->
+	<delete id="deleteLike" parameterType="appLikeVO">
+		delete from app_like
+		where 
+		ab_nm=#{abNm} and user_id=#{userId}
+	</delete>
+	
+	<!-- 좋아요 증가 -->
+	<update id="likeCntUp" parameterType="int">
+		update app_board
+		set ab_like_cnt = ab_like_cnt +1
+		where ab_nm = #{abNm}
+	</update>
+	
+	<!-- 좋아요가 이미 눌려있는지 확인 -->
+	<select id="stayLike"  parameterType="AppLikeVO" resultType="int">
+		select count(*) as cnt
+		 from app_like
+		 where ab_nm=#{abNm} and user_id=#{userId}
+	</select>
+	
+	<!-- 좋아요 감소 -->
+	<update id="likeCntDown"  parameterType="int">
+		update app_board
+		set ab_like_cnt = ab_like_cnt -1
+		where ab_nm = #{abNm}
+	</update>
+	
+	<!-- 댓글수 증가 -->	
+	<update id="cntUp" parameterType="int">
+		update app_board
+		set ab_comment_cnt = ab_comment_cnt +1
+		where ab_nm = #{abNm}
+	</update>
+
+	<!-- 댓글수 감소 -->	
+	<update id="cntDown" parameterType="int">
+		update app_board
+		set ab_comment_cnt = ab_comment_cnt -1
+		where ab_nm = #{abNm}
+	</update>
+	
+</mapper>

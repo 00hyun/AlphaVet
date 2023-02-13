@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.mapper.AppJoinMapper">
+	<insert id="appJoin" parameterType="UserVO">
+		insert into APP_USER
+		(USER_ID, USER_PW, USER_NAME, USER_TEL)
+		values (#{userId},#{userPw},#{userName},#{userTel})	
+	</insert>
+
+</mapper>

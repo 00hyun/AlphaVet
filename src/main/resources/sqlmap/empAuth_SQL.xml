@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="blank">
+
+	<insert id="EmpAuthMapper_insertEmpAuth" parameterType="empAuthVO">
+		insert into emp_auth
+		values(
+			emp_auth_seq.nextval, #{empId}, #{empAuthName}
+		)
+	</insert>
+
+	<delete id="EmpAuthMapper_deleteEmpAuth" parameterType="string">
+		delete from emp_auth
+		where emp_id = #{empId}
+	</delete>
+
+</mapper>

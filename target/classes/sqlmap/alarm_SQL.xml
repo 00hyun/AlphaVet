@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="blank">
+
+	<insert id="AlarmMapper_insertAlarm" parameterType="alarmVO">
+		insert into alarm (
+			alarm_nm,
+			emp_id,
+			alarm_cont,
+			alarm_date,
+			alarm_check,
+			alarm_type
+		)values(
+			#{alarmNm}||alarm_seq.nextval,
+			#{empId},
+			#{alarmCont},
+			sysdate,
+			'N',
+			#{alarmType}
+		)
+	</insert>
+
+	<select id="AlarmMapper_alarmList" parameterType="string" resultType="alarmVO">
+		select *
+		from(
+			select 
+				ALARM_NM   ,
+				EMP_ID     ,
+				ALARM_CONT ,
+				to_char(ALARM_DATE, 'yyyy-MM-dd') as ALARM_DATE,
+				ALARM_CHECK,
+				ALARM_TYPE
+			from alarm
+			where emp_id = #{empId}
+			order by alarm_date desc
+		)
+		where rownum between 1 and 5
+	</select>
+	
+	<select id="AlarmMapper_alarmUncheckCnt" parameterType="string" resultType="int">
+		select 
+			count(*) 
+		from 
+			alarm 
+		where 
+			emp_id = #{empId}
+		and 
+			upper(alarm_check) = 'N'
+	</select>
+	
+	<update id="AlarmMapper_checkAlarm" parameterType="string">
+		update 
+			alarm 
+		set 
+			alarm_check = 'Y' 
+		where 
+			emp_id = #{empId}
+		and 
+			alarm_check = 'N'
+	</update>	
+</mapper>

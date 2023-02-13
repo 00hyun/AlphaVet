@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.mapper.AppCommentMapper">
+
+	
+	<insert id="registerComment" parameterType="appCommentVO">
+		insert into app_comment(ac_nm, ab_nm, ac_con, user_id
+		)
+ 	 	values(
+ 		app_comment_seq.nextval, #{abNm}, #{acCon}, #{userId}
+ 		)
+	</insert>
+	
+	<update id="modifyComment" parameterType="appCommentVO">
+		update app_comment
+		set
+		ac_con = #{acCon}
+		where ac_nm=#{acNm} and ab_nm=#{abNm}
+	</update>
+
+	<delete id="deleteComment" parameterType="appCommentVO">
+		delete from app_comment
+		where ac_nm=#{acNm} and ab_nm=#{abNm}
+	</delete>
+</mapper>

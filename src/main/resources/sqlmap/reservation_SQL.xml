@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.mapper.ReservationMapper">
+
+	<resultMap id="resRM" type="reservationVO">
+    	<id property="resNm" column="RES_NM" />
+    	<result property="resTitle" column="RES_TITLE" />
+    	<result property="empId" column="EMP_ID" />
+    	<result property="resCont" column="RES_CONT" />
+    	<result property="resStartDate" column="RES_START_DATE" />
+<!--     	<result property="resEndDate" column="RES_END_DATE" /> -->
+    	<result property="resAllDay" column="RES_ALLDAY" />
+    	<result property="resColor" column="RES_COLOR" />
+	</resultMap>
+
+	<select id="reservationList" resultType="reservationVO">
+	<![CDATA[
+      SELECT 
+         A.RES_NM, A.EMP_ID, A.PAT_ID, A.RES_TYPE, A.RES_MEMO, A.RES_TITLE, A.RES_CONT, TO_CHAR(A.RES_START_DATE, 'yyyy-mm-dd') as resStartDate, TO_CHAR(A.RES_START_DATE, 'HH24:MI') as resTime, 
+            A.RES_ALLDAY, A.RES_COLOR, B.PAT_NAME, C.EMP_NAME, d.mem_tel
+      FROM RESERVATION A LEFT JOIN PATIENT B
+         ON A.PAT_ID = B.PAT_ID
+            LEFT JOIN MEMBER D
+            ON B.MEM_ID = D.MEM_ID
+      JOIN EMPLOYEES C
+          ON A.EMP_ID = C.EMP_ID
+          WHERE TO_CHAR(A.RES_START_DATE, 'yyyy-mm-dd') >= to_char(sysdate, 'yyyy-mm-dd')
+          ORDER BY resStartDate,resTime
+        	]]>
+	</select>
+	
+	<select resultType="ReservationVO" parameterType="string" id="selectReservListByEmpId">
+		SELECT 
+			A.RES_NM,
+			A.EMP_ID,
+			A.PAT_ID,
+			A.RES_TYPE,
+			A.RES_MEMO,
+			A.RES_TITLE,
+			A.RES_CONT,
+			TO_CHAR(A.RES_START_DATE, 'yyyy-mm-dd') as resStartDate,
+			TO_CHAR(A.RES_START_DATE, 'HH24:MI') as resTime, 
+            A.RES_ALLDAY,
+            A.RES_COLOR,
+            B.PAT_NAME,
+            C.EMP_NAME,
+            d.mem_tel
+		FROM
+			RESERVATION A
+		    LEFT JOIN PATIENT B ON A.PAT_ID = B.PAT_ID
+            LEFT JOIN MEMBER D ON B.MEM_ID = D.MEM_ID
+		    JOIN EMPLOYEES C ON A.EMP_ID = C.EMP_ID
+		WHERE
+			TO_CHAR(A.RES_START_DATE, 'yyyy-mm-dd') >= to_char(sysdate, 'yyyy-mm-dd')
+			AND C.EMP_ID=#{empId}
+		ORDER BY resStartDate, resTime
+	</select>
+	
+	<select id="resEmpList" resultType="reservationVO">
+	<![CDATA[
+		select distinct a.emp_id, b.emp_name
+    	from reservation a join EMPLOYEES b 
+    		 on a.emp_id = b.emp_id
+        	]]>
+	</select>
+	
+	
+	
+	<select id="getCalendar" resultType="reservationVO">
+	<![CDATA[
+		SELECT * FROM RESERVATION
+		        	]]>
+	</select>
+
+	<insert id="insert" parameterType="reservationVO">
+	<selectKey order="BEFORE" keyProperty="resNm" resultType="int">
+		select reservation_seq.nextval from dual
+	</selectKey>
+		INSERT INTO RESERVATION(
+			RES_NM, EMP_ID, PAT_ID, RES_TITLE, RES_CONT, RES_START_DATE, RES_ALLDAY, RES_COLOR
+		) values(
+			#{resNm}, #{empId}, #{patId}, #{resTitle}, #{resCont}, to_date(#{resStartDate},'yyyy-MM-dd HH24:MI'), #{resAllDay}, #{resColor}
+		)
+	</insert>
+	
+	<delete id="delete" parameterType="int">
+		DELETE FROM RESERVATION WHERE RES_NM = #{resNm}
+	</delete>
+	
+	<select id="selectOne" parameterType="int"  resultMap="resRM">
+		SELECT * FROM RESERVATION WHERE RES_NM = #{resNm}
+	</select>
+
+	<select id="getCalendarOne" parameterType="int"  resultMap="resRM">
+		SELECT * FROM RESERVATION WHERE RES_NM = #{resNm}
+	</select>
+	
+	<update id="update" parameterType="reservationVO">
+		UPDATE RESERVATION
+		SET 
+			RES_TITLE = #{resTitle},
+			RES_CONT = #{resCont},
+			RES_START_DATE = #{resStartDate}
+		WHERE RES_NM = #{resNm}	
+	</update>
+	
+	<select id="autocompletePat" parameterType="map" resultType="map">
+		SELECT 
+			 a.PAT_ID
+			,a.PAT_NAME
+	        ,b.MEM_TEL
+		FROM PATIENT a 
+	    inner join member b on a.mem_id = b.mem_id
+		WHERE PAT_NAME LIKE  '%'|| #{value} || '%' 
+	</select>
+	
+	<select id="autocompleteEmp" parameterType="map" resultType="map">
+		SELECT 
+             EMP_NAME, emp_id
+		FROM EMPLOYEES
+		WHERE EMP_NAME LIKE  '%'|| #{value} || '%' and
+              emp_job = '의사'
+	</select>
+
+
+	<!-- 문자 보내기  -->
+	
+	<select id="smsList" resultType="smsVO" parameterType="string">
+		<![CDATA[
+		select * from sms 
+			where substr(sms_cd, 1, 4) = 'h001'
+			and sms_type = '예약안내'
+			order by to_number(substr(sms_cd, 9)) desc
+		]]>
+	</select>
+	
+	<insert id="sendSms" parameterType="reservationVO" >
+		<selectKey order="BEFORE" keyProperty="smsNm" resultType="int">
+		select sms_history_seq.nextval from dual
+	</selectKey>
+	insert into sms_history (SMS_NM, PAT_ID, SMS_CON, SMS_DATE) values(#{smsNm}, #{patId}, '예약안내', sysdate)
+	</insert>
+	
+
+</mapper>

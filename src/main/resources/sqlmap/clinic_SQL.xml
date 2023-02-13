@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.mapper.ClinicMapper">
+	<select id="selectClinicList" resultType="ClinicVO">
+		select cli_cd, cli_name, cli_addr1, cli_addr2, to_char(cli_start_date, 'yy-mm-dd')cli_start_date, cli_state
+		from clinic
+	</select>
+
+	<select id="selectClinic" parameterType="string"  resultType="ClinicVO">
+		select cli_cd, cli_name, cli_addr1, cli_addr2, to_char(cli_start_date, 'YY-MM-DD')cli_start_date, cli_state, cli_Tel, 
+		lat, lng,cli_Info,cli_Intro,cli_Time
+		from clinic where cli_cd = #{cliCd}
+	</select>
+	
+	<select id = "isMember" parameterType="PetIsMemberVO" resultType="PetIsMemberVO">
+		select * 
+		from member a, patient b 
+		where A.cli_cd = b.cli_cd 
+		and A.mem_id = b.mem_id 
+		and a.mem_name = #{memName} 
+		and A.mem_tel = #{memTel} 
+		and a.cli_cd = #{cliCd}
+		and not (b.pat_id in (select pat_id from pet where user_id = #{userId}))	
+		
+		<!-- select *
+		from member a, patient b
+		where A.cli_cd = b.cli_cd
+		and A.mem_id = b.mem_id
+		and a.mem_name = #{memName}
+		and A.mem_tel = #{memTel}
+		and a.cli_cd = #{cliCd}
+ -->	
+ 	</select>
+	
+	<select id = "hospitalSelect" parameterType="string" resultType="hospitalVO">
+        select rownum, a.*
+        from (select b.*, to_char(A.PRA_DATE, 'YYYY-MM-DD') as pra_date, A.PRA_CON
+		from pra a, HOSPITAL b
+		where A.PAT_ID = b.PAT_ID
+		and a.pat_id = #{patId}
+		--and rownum = 1
+		order by a.pra_date desc)a
+        where rownum = 1
+	</select>
+</mapper>

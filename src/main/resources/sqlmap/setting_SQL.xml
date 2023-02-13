@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.mapper.SettingMapper">
+
+	<select id="SettingMapper_listPraRoom" resultType="pra_RoomVO" parameterType="string">
+		select 
+			a.pra_room_nm,
+			a.emp_id,
+			b.emp_name,
+			a.cli_cd,
+			b.animal_cd
+		from pra_room a, employees b
+		where a.cli_cd = #{cliCd}
+		and a.emp_id = b.emp_id
+		order by a.pra_room_nm
+	</select>
+	
+	<select id="SettingMapper_listSurRoom" resultType="surRoomVO" parameterType="string">
+		select * from sur_room where cli_cd = #{cliCd}
+		order by sur_room_nm
+	</select>
+	
+	<select id="SettingMapper_listWard" resultType="wardVO" parameterType="string">
+		select * from ward where cli_cd = #{cliCd}
+		order by ward_nm
+	</select>
+	
+	<select id="SettingMapper_listCage" resultType="cageVO" parameterType="string">
+		select a.* 
+		from cage a, ward b 
+		where a.ward_nm = b.ward_nm and b.cli_cd= #{cliCd}
+		order by cage_nm
+	</select>
+
+	<select id="SettingMapper_listAnimal" resultType="animalVO" parameterType="string">
+		select *
+		from animal
+		where cli_cd = #{cliCd}
+	</select>
+	
+	<update id="SettingMapper_updatePraRoom" parameterType="pra_RoomVO">
+		MERGE INTO PRA_ROOM
+		USING DUAL
+		ON ( PRA_ROOM_NM = #{praRoomNm} )
+		WHEN MATCHED THEN
+		UPDATE SET 
+		EMP_ID = #{empId}
+		WHEN NOT MATCHED THEN 
+		INSERT (
+		    PRA_ROOM_NM
+		    , EMP_ID
+		    , CLI_CD
+		  ) values (
+		    PRA_ROOM_SEQ.nextval
+		    , #{empId}
+		    , #{cliCd}
+		  )
+	</update>
+
+	<update id="SettingMapper_updateSurRoom" parameterType="surRoomVO">
+		MERGE INTO SUR_ROOM
+		USING DUAL
+		ON ( SUR_ROOM_NM = #{surRoomNm} )
+		WHEN MATCHED THEN
+		UPDATE SET 
+		ANIMAL_CD = #{animalCd}
+		WHEN NOT MATCHED THEN 
+		INSERT (
+		    SUR_ROOM_NM
+		    , ANIMAL_CD
+		    , CLI_CD
+		  ) values (
+		    SUR_ROOM_SEQ.nextval
+		    , #{animalCd}
+		    , #{cliCd}
+		  )
+	</update>
+
+	<update id="SettingMapper_updateCage" parameterType="cageVO">
+		MERGE INTO CAGE
+		USING DUAL
+		ON ( CAGE_NM = #{cageNm} )
+		WHEN MATCHED THEN
+		UPDATE SET 
+		CAGE_SIZE = #{cageSize},
+		CAGE_CON = #{cageCon}
+		WHEN NOT MATCHED THEN 
+		INSERT (
+		    CAGE_NM
+		    , CAGE_SIZE
+		    , CAGE_CON,
+		    WARD_NM
+		  ) values (
+		    CAGE_SEQ.nextval
+		    , #{cageSize}
+		    , #{cageCon}
+		    , #{wardNm}
+		  )
+	</update>
+	
+	<update id="SettingMapper_updateWardAmount" parameterType="wardVO">
+		UPDATE WARD
+		SET
+			WARD_AMOUNT = #{wardAmount}
+		WHERE
+			WARD_NM = #{wardNm}
+	</update>
+	
+	<update id="SettingMapper_updateWard" parameterType="wardVO">
+		MERGE INTO WARD
+		USING DUAL
+		ON ( WARD_NM = #{wardNm} )
+		WHEN MATCHED THEN
+		UPDATE SET 
+		ANIMAL_CD = #{animalCd},
+		WARD_NAME = #{wardName}
+		WHEN NOT MATCHED THEN 
+		INSERT (
+		    WARD_NM
+		    , WARD_NAME
+		    , ANIMAL_CD
+		    , CLI_CD
+		    , WARD_AMOUNT
+		  ) values (
+		    WARD_SEQ.nextval
+		    , #{wardName}
+		    , #{animalCd}
+		    , #{cliCd}
+		    , 0
+		  )
+	</update>
+</mapper>

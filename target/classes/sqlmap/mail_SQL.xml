@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.mapper.MailMapper">
+
+	<insert id = "insertMail" parameterType="mailVO">
+		<selectKey keyProperty="mailNm" order = "BEFORE" resultType="int">
+			select MAIL_SEQ.NEXTVAL from dual
+		</selectKey>
+		insert all 
+			into MAIL (MAIL_NM, EMP_ID, MAIL_TITLE, MAIL_CON, MAIL_DATE, MAIL_RECEIVER, TO_MAIL) 
+			values (#{mailNm}, #{empId}, #{mailTitle}, #{mailCon}, sysdate, 1, #{toMail})
+			into MAIL_FILE (MF_NM, MAIL_NM, MF_NAME, MF_SIZE, MF_TYPE, MF_PATH) 
+			values (MAIL_FILE_SEQ.NEXTVAL, #{mailNm}, #{mfName}, '1', '1', #{mfPath})
+		select * from dual
+		<!-- insert into mail values(MAIL_SEQ.NEXTVAL, #{empId}, #{mailTitle}, #{mailCon}, sysdate, 1) -->
+	</insert>
+	
+	<select id = "selectMailList" parameterType="string" resultType="mailVO">
+		select a.MAIL_NM, a.EMP_ID, a.MAIL_TITLE, to_char(a.MAIL_DATE, 'YYYY-MM-DD HH24:MI:SS') as mail_date, a.MAIL_RECEIVER, a.TO_MAIL, a.MAIL_CON, 
+			   b.emp_profile, b.emp_job, b.emp_name
+		from mail a, EMPLOYEES b
+		where b.emp_id = #{empId}
+		order by a.mail_date desc
+	</select>
+	
+	<select id = "selectMail" parameterType="int" resultType="mailVO">
+		select a.*, b.emp_profile, b.emp_job, b.emp_name, b.emp_mail, c.*
+		from mail a, EMPLOYEES b, mail_file c
+		where A.EMP_ID = b.EMP_ID
+        and A.mail_nm = c.mail_nm
+		and a.mail_nm = #{mailNm}
+	</select>
+	
+	<delete id = "mailDelete" parameterType="int">
+		delete mail where mail_nm = #{mailNm}
+	</delete>
+	
+</mapper>

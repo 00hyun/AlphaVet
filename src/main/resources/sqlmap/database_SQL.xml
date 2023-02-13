@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.mapper.DatabaseMapper">
+
+	<insert id="insertMedi" parameterType="drugVO">
+		INSERT INTO DRUG(
+			DRUG_NM             ,
+			DRUG_IO             ,
+			ITEM_NAME           ,
+			ITEM_ENG_NAME       ,
+			DRUG_AMOUNT         ,
+			DRUG_PRICE          ,
+			DRUG_STOCK_DATE     ,
+			ENTP_NAME           ,
+			FROM_CODE_NAME      ,
+			ITEM_SEQ            ,
+			CLASS_NO            ,
+			ITEM_PERMIT_DATE    ,
+			CLASS_NAME          ,
+			CHART               ,
+			ITEM_IMAGE          ,
+			IMG_REGIST_TS       ,
+			PRINT_FRONT         ,
+			PRINT_BACK          ,
+			LENG_LONG           ,
+			LENG_SHORT          ,
+			THICK               ,
+			ETC_OTC_NAME        ,
+			MARK_CODE_FRONT_ANAL,
+			MARK_CODE_BACK_ANAL ,
+			MARK_CODE_FRONT     ,
+			MARK_CODE_BACK      ,
+			DRUG_SHAPE          ,
+			CHANGE_DATE         
+		) VALUES(
+		       	 DRUG_SEQ.NEXTVAL,
+		       	 'I',
+		       	 #{itemName, jdbcType=VARCHAR},
+		       	 #{itemEngName, jdbcType=VARCHAR},
+		       	 5,
+		       	 8000,
+		       	 SYSDATE,
+		       	 #{entpName, jdbcType=VARCHAR},
+		       	 #{fromCodeName, jdbcType=VARCHAR},
+		       	 #{itemSeq, jdbcType=VARCHAR},
+		       	 #{classNo, jdbcType=VARCHAR},
+		       	 #{itemPermitDate, jdbcType=VARCHAR},
+		       	 #{className, jdbcType=VARCHAR},
+		       	 #{chart, jdbcType=VARCHAR},
+		       	 #{itemImage, jdbcType=VARCHAR},
+		       	 #{imgRegistTs, jdbcType=VARCHAR},
+		       	 #{printFront, jdbcType=VARCHAR},
+		       	 #{printBack, jdbcType=VARCHAR},
+		       	 #{lengLong, jdbcType=VARCHAR},
+		       	 #{lengShort, jdbcType=VARCHAR},
+		       	 #{thick, jdbcType=VARCHAR},
+		       	 #{etcOtcName, jdbcType=VARCHAR},
+		       	 #{markCodeFrontAnal, jdbcType=VARCHAR},
+		       	 #{markCodeBackAnal, jdbcType=VARCHAR},
+		       	 #{markCodeFront, jdbcType=VARCHAR},
+		       	 #{markCodeBack, jdbcType=VARCHAR},
+		       	 #{drugShape, jdbcType=VARCHAR},
+		       	 #{changeDate, jdbcType=VARCHAR}
+		)
+	</insert>
+	
+	<insert id="insertClinic" parameterType="ClinicVO">
+		INSERT INTO CLINIC(
+			CLI_CD             ,
+			CLI_NAME             ,
+			CLI_ADDR1           ,
+			CLI_ADDR2       ,
+			CLI_START_DATE         ,
+			CLI_STATE          ,
+			CLI_TEL         
+		) VALUES(
+		    'h00'||CLINIC_SEQ.NEXTVAL,
+		    #{cliName},
+		    #{cliAddr1},
+		    #{cliAddr2},
+		    to_date(#{cliStartDate}),
+		    'Y',
+		    '042-123-4567'
+		)
+	</insert>
+	
+	<insert id="insertAppContent" parameterType="petBoardVO">
+		INSERT INTO APP_BOARD(
+			AB_NM,
+			AB_TYPE,
+			AB_TITLE,
+			AB_CON,
+			AB_WRITER,
+			AB_COMMENT_CNT,
+			AB_LIKE_CNT,
+			AB_IMG
+		) VALUES (
+			APP_BOARD_SEQ.NEXTVAL,
+			#{abType},
+			#{abTitle},
+			#{abCon},
+			#{abWriter},
+			0,
+			0,
+			#{abImg}
+		)
+	</insert>
+
+</mapper>

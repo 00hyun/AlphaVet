@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co">
+
+	<select id="chartMapper_animalTypeCnt1" resultType="map">
+		select 
+			a.animal_type as animalType,
+			count(b.pat_id) as animalCnt
+		from 
+			animal a
+		left outer join 
+			patient b 
+		on 
+			a.animal_cd = b.animal_cd
+		group by 
+			a.animal_type
+	</select>
+	
+	<select id="chartMapper_animalTypeCnt" resultType="map" parameterType="map">
+		select 
+			a.animal_type as animalType,
+			nvl(b.praCnt, 0) as praCnt
+		from 
+			animal a
+		left outer join 
+			(select b.animal_cd, count(c.pra_cd) as praCnt
+                from patient b, pra c
+                where b.pat_id = c.pat_id
+                and c.pra_date between to_date(#{startDate}) and to_date(#{endDate})
+                group by b.animal_cd) b 
+		on 
+			a.animal_cd = b.animal_cd
+	</select>
+
+	<select id="chartMapper_daysPayment" resultType="map" parameterType="map">
+		select
+		    sum(pay_total) as payTotal,
+		    to_char(pay_date, 'yyyy/MM/dd') as payDate
+		from payment
+		where pay_date between to_date(#{startDate}) and to_date(#{endDate})
+		group by to_char(pay_date, 'yyyy/MM/dd')
+		order by payDate
+	</select>
+	
+	<select id="chartMapper_daysPra" resultType="map" parameterType="map">
+		select
+		    count(pra_cd) as praCnt,
+		    to_char(pra_date, 'yyyy/MM/dd') as praDate
+		from
+		    pra
+		where
+			pra_date between to_date(#{startDate}) and to_date(#{endDate})
+		group by to_char(pra_date, 'yyyy/MM/dd')
+		order by praDate
+	</select>
+	
+	<select id="chartMapper_drugCnt" resultType="map" parameterType="map">
+		select * from(
+        select
+		    substr(b.item_name,0,6) as itemName,
+		    count(a.pre_nm) as drugCnt
+		from pre_in a, drug b, PRA C
+		where a.drug_nm = b.drug_nm
+        AND A.PRA_CD = C.PRA_CD
+        AND C.PRA_DATE between to_date(#{startDate}) and to_date(#{endDate})
+		group by b.item_name
+        order by drugCnt desc
+        ) where rownum between 1 and 10
+	</select>
+	
+	<select id="chartMapper_praCntByEmp" resultType="map" parameterType="map">
+		select 
+            a.emp_name empName,
+            count(b.pra_cd) as praCnt
+		from 
+            employees a
+		left outer join 
+			pra b
+		on 
+			b.emp_id = a.emp_id
+		and b.pra_date between to_date(#{startDate}) and to_date(#{endDate})
+        where a.emp_job = '의사'
+        and a.emp_state = '재직중'
+		group by 
+			a.emp_name
+        order by praCnt desc
+	</select>
+</mapper>

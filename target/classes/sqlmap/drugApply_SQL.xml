@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.mapper.DrugApplyMapper">
+	<select id="daList" resultType="drugApplyVO">
+		select da_nm, da_state, to_char(da_date,'yyyy-MM-dd') as da_date, da_price 
+		from drug_apply
+		where da_date between to_date(#{startDate}) and to_date(#{endDate})
+		order by da_nm desc
+	</select>
+	
+	<select id="DrugApplyMapper_daDetail" parameterType="int" resultType="daDetailVO">
+		select 
+			A.DA_DT_NM, 
+			A.DA_NM, 
+			A.BUYER_CD, 
+			A.DA_DT_AMOUNT, 
+			A.DA_DT_CHECK, 
+			A.DA_DT_PRICE_CHECK, 
+			A.DA_DT_PRICE,
+			to_char(A.DA_DT_PRICEDAY, 'yyyy-MM-dd') as DA_DT_PRICEDAY, 
+			B.DRUG_NM, 
+			B.ITEM_NAME, 
+			B.ITEM_ENG_NAME,
+			B.ENTP_NAME,
+			B.DRUG_COST_PRICE
+		from da_detail A, DRUG B
+		where da_nm = ${daNm}
+		AND A.DRUG_NM = B.DRUG_NM
+		ORDER BY DA_DT_CHECK, DRUG_NM
+	</select>
+	
+	<insert id="DrugApplyMapper_insertDa" parameterType="drugApplyVO" useGeneratedKeys="true">
+		<selectKey order="BEFORE" keyProperty="daNm" resultType="int">
+			select drug_apply_seq.nextval from dual
+		</selectKey>
+		insert into drug_apply(
+			da_nm, da_state, da_date, da_price
+		) values(
+			${daNm}, 'N', sysdate, ${daPrice}
+		)
+	</insert>
+	
+	<insert id="DrugApplyMapper_insertDaDt" parameterType="daDetailVO">
+		insert into da_detail(
+			da_dt_nm, 
+			da_nm, 
+			drug_nm, 
+			buyer_cd, 
+			da_dt_amount, 
+			da_dt_check, 
+			da_dt_price_check, 
+			da_dt_price, 
+			da_dt_priceday
+		) values(
+			da_detail_seq.nextval,
+			${daNm},
+			${drugNm},
+			(select buyer_cd from buyer where buyer_name=#{buyerName}),
+			${daDtAmount},
+			'N',
+			'0',
+			(${daDtAmount}*${drugCostPrice}),
+			''
+		)
+	</insert>
+	
+	<update id="DrugApplyMapper_updateDaDtCheck" parameterType="daDetailVO">
+		update da_detail
+		set
+			da_dt_check = #{daDtCheck}
+		where
+			da_dt_nm = #{daDtNm}
+	</update>
+	
+	<select id="DrugApplyMapper_countDaDTStateN" parameterType="int" resultType="int">
+		select count(*)
+	    from da_detail
+	    where da_nm = #{daDtNm}
+	    and da_dt_check = 'N'
+	</select>
+	
+	<update id="DrugApplyMapper_updateDaState" parameterType="map">
+		update drug_apply
+	    set
+	        da_state = #{daState}
+	    where
+	        da_nm = #{daNm}
+	</update>
+	
+</mapper>

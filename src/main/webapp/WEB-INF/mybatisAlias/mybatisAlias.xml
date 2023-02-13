@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<!-- 
+		카멜케이스 : book_id => bookId
+	 -->
+	<settings>
+		<setting name="mapUnderscoreToCamelCase" value="true"/>
+	</settings>
+
+	<!-- 자주 사용하는 타입의 별칭을 셋팅 -->
+	<!-- <typeAliases>
+		<typeAlias type="kr.co.vo.PatientVO" alias="patientVO"/>
+		<typeAlias type="kr.co.vo.MemPatiVO" alias="memPatiVO"/>
+		<typeAlias type="kr.co.vo.MemberVO" alias="memberVO"/>
+		<typeAlias type="kr.co.vo.ClinicVO" alias="ClinicVO"/>
+		<typeAlias type="kr.co.vo.BoardVO" alias="boardVO"/>
+		<typeAlias type="kr.co.vo.EnterVO" alias="enterVO"/>
+		<typeAlias type="kr.co.vo.EnterPatiVO" alias="enterPatiVO"/>
+		<typeAlias type="kr.co.vo.Pra_RoomVO" alias="pra_RoomVO"/>
+		<typeAlias type="kr.co.vo.UserVO" alias="userVO"/>
+		<typeAlias type="kr.co.vo.PetVO" alias="petVO"/>
+		<typeAlias type="kr.co.vo.ReservationVO" alias="reservationVO"/>
+		<typeAlias type="kr.co.vo.RecPatientVO" alias="recPatientVO"/>
+
+		<typeAlias type="kr.co.vo.ScheduleVO" alias="schVO"/>
+		<typeAlias type="kr.co.vo.PraVO" alias="praVO"/>
+		<typeAlias type="kr.co.vo.ReceiptVO" alias="receiptVO"/>
+		
+		
+		
+		
+		
+		<typeAlias type="kr.co.vo.EmpAuthVO" alias="empAuthVO"/>
+		<typeAlias type="kr.co.vo.EmpVO" alias="empVO"/>
+		<typeAlias type="kr.co.vo.DrugVO" alias="drugVO"/>
+		<typeAlias type="kr.co.vo.DrugApplyVO" alias="drugApplyVO"/>
+	</typeAliases>-->
+	<typeAliases>
+		<package name="kr.co.vo" />
+	</typeAliases>
+	
+</configuration>

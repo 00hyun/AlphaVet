@@ -1,0 +1,67 @@
+// 
+// Widgets.scss
+// 
+
+
+.congo-widget{
+    background: url(../images/overlay-1.png);
+    background-size: cover;
+    background-position: top;
+    // width: 100%;
+    // height: 100%;
+    background-color: rgba($primary, 1.9);
+}
+
+.sales-border{
+    border-right: 2px solid $light;
+}
+
+// activity widget
+
+.activity-feed {
+    list-style: none;
+    .feed-item {
+        position: relative;
+        padding-bottom: 30px;
+        padding-left: 30px;
+        border-left: 2px solid $light;
+        &:after {
+          content: "";
+          display: block;
+          position: absolute;
+          top: 0;
+          left: -11px;
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          border: 6px solid $primary;
+          background-color: $white;
+        }
+        &:last-child {
+          border-color: transparent;
+        }
+    }
+  }
+  
+
+
+.review-carousel{
+    .carousel-control-next, .carousel-control-prev{
+        top: auto;
+        bottom: 15px;
+        width: 0%;
+        width: 26px;
+        height: 26px;
+        line-height: 26px;
+        color: $primary;
+        background-color: rgba($primary, 0.5);
+        font-size: 20px;
+        border-radius: 50%;
+    }
+
+    .carousel-control-prev{
+        left: auto;
+        right: 40px;
+    }
+
+}

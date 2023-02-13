@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or">
+
+	<select id="SmsMapper_smsList" resultType="smsVO" parameterType="string">
+		select * from sms where substr(sms_cd, 1, 4) = #{cliCd}
+		order by to_number(substr(sms_cd, 9)) desc
+	</select>
+
+	<insert id="SmsMapper_insertSms" parameterType="smsVO">
+		insert into sms (
+			sms_cd, sms_title, sms_content, sms_type
+		) values(
+			#{cliCd}||'-sms'||(to_char(sms_seq.nextval)), 
+			#{smsTitle},
+			#{smsContent},
+			#{smsType}
+		)
+	</insert>
+	
+	<update id="SmsMapper_updateSms" parameterType="smsVO">
+		update sms set
+			sms_title = #{smsTitle},
+			sms_content = #{smsContent},
+			sms_type = #{smsType}
+		where
+			sms_cd = #{smsCd}
+	</update>
+	
+	<delete id="SmsMapper_deleteSms" parameterType="string">
+		delete from sms
+		where sms_cd = #{smsCd}
+	</delete>
+	
+	<select id="SmsMapper_empSmsList" resultType="smsVO">
+		select *
+		from sms
+		where sms_type = '(직원)등록'
+	</select>
+</mapper>

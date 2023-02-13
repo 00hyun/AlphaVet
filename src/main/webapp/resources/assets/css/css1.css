@@ -1,0 +1,54 @@
+[iText에서 html태그를 pdf로 변환시 적용할 css]
+ *img태그 css 안 먹음
+ *한글 출력 위해서는 한글폰트 ttf파일 형식으로 지정해줘야 함
+ *수업 때 했던 noticeboard detail부분 pdf로 변환하는 모듈입니다
+
+
+@charset "utf-8";
+
+html {
+	height:100%;
+}
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,input,select, button, textarea,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, hgroup,
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video{	
+	padding:0px;
+	margin:0px;
+}
+
+#title {
+	text-align: center;
+	font-size:30px;
+	margin-top: 0px;
+}
+
+#info {
+	text-align: center;
+	padding-bottom: 30px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

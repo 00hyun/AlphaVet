@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.mapper.AppHomeMapper">
+
+	<select id="petList" parameterType="string" resultType="petVO">
+		select *
+		from pet
+		where user_id = #{userId}
+		order by pat_id
+	</select>
+	
+	<insert id = "insertPet" parameterType="petVO">
+		insert into pet(pat_id, user_id, animal_cd, pat_name, pat_weight, pat_birth) 
+			   values(#{patId}, #{userId}, #{animalCd}, #{patName}, #{patWeight}, #{patBirth})
+	</insert>
+	
+	<insert id = "insertHos" parameterType="hospitalVO">
+		insert into hospital(hos_nm, pat_id, cli_cd, cli_name, cli_addr1, cli_addr2, cli_tel) 
+			   values(HOS_SEQ.Nextval, #{patId}, #{cliCd}, #{cliName}, #{cliAddr1}, #{cliAddr2}, #{cliTel})
+	</insert>
+	
+	<select id = "accessList" parameterType="string" resultType="petIsMemberVO">
+		select a.*, B.Cli_Cd, B.Cli_Name, B.Hos_Nm, B.Cli_Addr1, B.Cli_Addr2, B.Cli_Tel, B.Hos_Nm
+		  from pet a, Hospital b
+		 where A.Pat_Id = B.Pat_Id
+		   and A.User_Id = #{userId}
+	</select>
+	
+	
+	<select resultType="praVO" parameterType="string" id="selectPraList">
+		SELECT PRA_CD, CLI_CD, EMP_ID, PAT_ID, PRA_DEPT, to_char(PRA_DATE, 'YYYY-MM-DD') as pra_date2, PRA_STATUS, PRA_CON, PRA_WEIGHT, SUR_CHECK, STAY_CHECK, PRE_OUT_CHECK, PRE_IN_TOTAL, TEST_TOTAL, PRA_PRICE, VACCINE_PRICE, REC_NM
+		FROM PRA
+		WHERE PAT_ID = #{patId}
+		ORDER BY PRA_DATE ASC
+	</select>
+	
+	
+	<select id = "careVaccineList" parameterType="string" resultType="vaccineVO">
+		select a.PAT_ID, a.VACCINE_NAME, to_char(a.VACCINE_DATE, 'YYYY-MM-DD') AS vaccine_date, a.VACCINE_COUNT, a.vd_nm,
+			   b.cli_cd, b.cli_name, b.cli_addr1, b.cli_addr2, b.cli_tel, b.hos_nm 
+		from vaccine a, hospital b
+		where a.pat_id = b.pat_id
+		and a.pat_id = #{patId}
+	</select>
+	
+	<select id = "careStayList" parameterType="string" resultType="enterVO">
+		select a.*, 
+			   b.cli_cd, b.cli_name, b.cli_addr1, b.cli_addr2, b.cli_tel, b.hos_nm 
+		from stay a, hospital b
+		where a.pat_id = b.pat_id
+		and a.pat_id = #{patId}
+	</select>
+
+
+	
+	<resultMap type='appStayVO' id="appStayMap">
+		<result property="snNm" column="SN_NM"/>
+		<result property="stCd" column="ST_CD"/>
+		<result property="snDate" column="SN_DATE"/>
+		<result property="snSpecal" column="SN_SPECAL"/>
+		<result property="stPrice" column="ST_PRICE"/>
+		<result property="snCon" column="SN_CON"/>
+		<result property="snHealthState" column="SN_HEALTH_STATE"/>
+		<result property="snTempState" column="SN_TEMP_STATE"/>
+		<result property="snPooState" column="SN_POO_STATE"/>
+		<result property="stFoodTotal" column="ST_FOOD_TOTAL"/>
+		<collection property="foodList" resultMap="foodVOList"></collection>
+	</resultMap>
+	<resultMap type="foodVO" id="foodVOList">
+		<result property="foodPrice" column="FOOD_PRICE"/>
+		<result property="foodName" column="FOOD_NAME"/>
+	</resultMap>
+ 	<select id = "stayDetail" parameterType="string" resultMap="appStayMap">
+      select a.SN_NM, 
+      		a.ST_CD, 
+      		to_char(a.SN_DATE, 'YYYY-MM-DD') as sn_date, 
+      		a.SN_SPECAL, 
+      		a.ST_PRICE, 
+      		a.SN_CON, 
+      		a.SN_HEALTH_STATE, 
+      		a.SN_TEMP_STATE, 
+      		a.SN_POO_STATE,
+           b.st_food_total,
+           C.food_price, 
+           D.food_name
+      from stay_note a, stay b, food_detail c, food d
+      where a.st_cd = b.st_cd
+        and A.st_cd = C.st_cd
+        and D.food_nm = C.food_nm
+      	and a.st_cd = #{stCd}
+        and to_char(a.sn_date, 'YYYY-MM-DD') = to_char(c.food_date, 'YYYY-MM-DD')
+      order by a.sn_date
+	</select>
+	
+<!-- 	<select id = "stayDetail" parameterType="string" resultMap="appStayMap">
+		select a.SN_NM, a.ST_CD, to_char(a.SN_DATE, 'YYYY-MM-DD HH24:MI') as sn_date, a.SN_SPECAL, a.ST_PRICE, a.SN_CON, a.SN_HEALTH_STATE, a.SN_TEMP_STATE, a.SN_POO_STATE,
+		       b.st_food_total
+		from stay_note a, stay b
+		where a.st_cd = b.st_cd 
+		and a.st_cd = #{stCd}
+		order by a.sn_date
+	</select> -->
+	
+	
+	<select id = "vaccineDetail" parameterType="vaccineVO" resultType="vaccineVO">
+		<![CDATA[
+			select DISTINCT b.*, to_char((select vaccine_date from vaccine where pat_id = #{patId} and vd_nm = #{vdNm}) + b.VD_DAY) as next_day    
+			from vaccine_detail b     
+			where b.VD_NAME = (select vd_name from vaccine_detail where vd_nm = #{vdNm})    
+			and b.vd_nm >= #{vdNm}
+		]]>
+	</select>
+	
+	<select id = "hosBoardList" parameterType="string" resultType="petBoardVO">
+		<![CDATA[
+			select * from app_board where ab_type = #{abType}
+		]]>
+	</select>
+	
+		
+	<select id="appReceipt" parameterType="string" resultType="MemPatiVO">
+	    select a.pat_name, b.mem_tel,a.pat_gender, a.pat_birth, a.pat_memo
+        from patient a join member b
+        on a.mem_id = b.mem_id
+        where a.pat_id = #{pat_id}
+	</select>
+	
+	<insert id="insertAppReceipt" parameterType="AppReceiptVO">
+	 insert into appreceipt
+       values (APPRECEIPT_SEQ.NEXTVAL, #{patId} ,'N')
+	</insert>
+	
+	<select id="checkReceipt" parameterType="string" resultType="int">
+	select count(*)
+	from appreceipt
+	where pat_id = #{patId} and wonmu_check = 'N'
+	</select>
+	
+	<select id = "empList" parameterType="string" resultType="empVO">
+		select * from EMPLOYEES where ANIMAL_CD = #{animalCd} and emp_job = '의사' and emp_state = '재직중'
+	</select>
+	
+	<select id = "reservationList" parameterType="string" resultType="reservationVO">
+		select * from reservation where emp_id = #{empId}
+	</select>
+	
+	<insert id = "reservationInsert" parameterType="reservationVO">
+		insert into reservation (RES_NM, EMP_ID, PAT_ID, RES_START_DATE, RES_ALLDAY, RES_TITLE, RES_COLOR)
+		values (RESERVATION_SEQ.NEXTVAL, #{empId}, #{patId}, to_date(#{resStartDate}, 'yyyy/mm/dd HH24:MI:SS'), '0', '진료', '#a4c6f1')
+	</insert>
+	
+	<select id = "reservationMyList" parameterType="string" resultType="reservationVO">
+		select * 
+		from reservation
+		where pat_id = #{patId}
+		and res_start_date > (select sysdate from dual)
+	</select>
+	
+	<select id="patWeight" parameterType="string" resultType="PraVO">
+	    select b.rec_nm, a.pra_cd, a.PRA_WEIGHT, a.PRA_date
+		from pra a join (select rec_nm
+		                from receipt
+		                where pat_id =  #{patId} )b
+		on b.rec_nm = a.rec_nm
+		order by b.rec_nm asc
+    </select>
+    
+    
+    <select id="cont1" resultType="AppCont1">
+    select * from app_cont1
+    </select>
+    
+    <select id="cont2" resultType="AppCont2">
+    select * from app_cont2
+    </select>
+</mapper>

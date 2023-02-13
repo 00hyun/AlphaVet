@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.mapper.MyInfoMapper">
+
+<update id="updateCurrent" parameterType="string">
+	update EMPLOYEES set emp_current = '업무' where emp_id = #{empId}
+</update>
+
+<update id="updateCurrent2" parameterType="string">
+	update EMPLOYEES set emp_current = '자리비움' where emp_id = #{empId}
+</update>
+
+</mapper>

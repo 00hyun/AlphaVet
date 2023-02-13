@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE tiles-definitions PUBLIC "-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN"
+"http://tiles.apache.org/dtds/tiles-config_3_0.dtd">
+
+<!-- Tiles 설정 -->
+<tiles-definitions>
+	
+	<!-- mainTemplate 설정 -->
+	<definition name="mainTemplate" template="/WEB-INF/views/vetTiles/mainTemplate.jsp">
+		<put-attribute name="header" value="/WEB-INF/views/vetTiles/header.jsp"/>
+		<put-attribute name="footer" value="/WEB-INF/views/vetTiles/footer.jsp"/>
+		<put-attribute name="sidebar" value="/WEB-INF/views/vetTiles/sidebar.jsp"/>
+		<put-attribute name="menu" value="/WEB-INF/views/vetTiles/menu.jsp"/>
+		<put-attribute name="right-sidebar" value="/WEB-INF/views/vetTiles/right-sidebar.jsp"/>
+		<put-attribute name="pageCSS" value=""/>
+		<put-attribute name="content" value=""/>
+	</definition>
+	
+	<!-- main -->	
+	<definition name="alphaVet/*" extends="mainTemplate">
+		<put-attribute name="content" value="/WEB-INF/views/alphaVet/{1}.jsp"/>
+	</definition>
+	
+	<definition name="alphaVet/*/*" extends="mainTemplate">
+		<put-attribute name="content" value="/WEB-INF/views/alphaVet/{1}/{2}.jsp"/>
+	</definition>
+
+<!-- 	지현(마이페이지) -->
+<!-- 	<definition name="alphaVet/myhome/*" extends="mainTemplate"> -->
+<!-- 		<put-attribute name="content" value="/WEB-INF/views/alphaVet/myhome/{1}.jsp"/> -->
+<!-- 	</definition> -->
+
+<!-- 	보미(원무) -->
+<!-- 	<definition name="alphaVet/administration/*" extends="mainTemplate"> -->
+<!-- 		<put-attribute name="content" value="/WEB-INF/views/alphaVet/administration/{1}.jsp"/> -->
+<!-- 	</definition> -->
+
+<!-- 	재한(진료) -->
+<!-- 	<definition name="alphaVet/medic/*" extends="mainTemplate"> -->
+<!-- 		<put-attribute name="content" value="/WEB-INF/views/alphaVet/medic/{1}.jsp"/> -->
+<!-- 	</definition> -->
+
+<!-- 	영현(입원) -->
+<!-- 	<definition name="alphaVet/enter/*" extends="mainTemplate"> -->
+<!-- 		<put-attribute name="content" value="/WEB-INF/views/alphaVet/enter/{1}.jsp"/> -->
+<!-- 	</definition> -->
+
+<!-- 	영현(예약) -->
+<!-- 	<definition name="alphaVet/reservation/*" extends="mainTemplate"> -->
+<!-- 		<put-attribute name="content" value="/WEB-INF/views/alphaVet/reservation/{1}.jsp"/> -->
+<!-- 	</definition> -->
+
+<!-- 	영현(홈) -->
+<!-- 	<definition name="alphaVet/home/*" extends="mainTemplate"> -->
+<!-- 		<put-attribute name="content" value="/WEB-INF/views/alphaVet/home/{1}.jsp"/> -->
+<!-- 	</definition> -->
+
+
+
+<!--                                  소영 시작                                           -->
+	<definition name="alphaVet/admin/*" extends="mainTemplate">
+<!-- 		<put-attribute name="pageCSS" value="/WEB-INF/views/vetTiles/css/adminCSS.jsp"/> -->
+		<put-attribute name="content" value="/WEB-INF/views/alphaVet/admin/{1}.jsp"/>
+	</definition>
+	<definition name="loginTemplate" template="/WEB-INF/views/vetTiles/login/mainTemplate.jsp">
+	</definition>
+	
+	<!-- main -->	
+	<definition name="login/*" extends="loginTemplate">
+		<put-attribute name="content" value="/WEB-INF/views/alphaVet/login/{1}.jsp"/>
+	</definition>
+<!--                                  소영 끝                                           -->
+	
+	
+	
+	
+	
+	
+<!--                            alphaPet 타일즈 설정 시작                                                                          -->
+	<definition name="appTemplate" template="/WEB-INF/views/petTiles/mainTemplate.jsp">
+		<put-attribute name="header" value="/WEB-INF/views/petTiles/header.jsp"/>
+		<put-attribute name="footer" value="/WEB-INF/views/petTiles/footer.jsp"/>
+	</definition>
+	
+	<definition name="alphaPet/*" extends="appTemplate">
+		<put-attribute name="content" value="/WEB-INF/views/alphaPet/{1}.jsp"/>
+	</definition>
+
+<!-- 	<definition name="alphaPet/*/*" extends="appTemplate">
+		<put-attribute name="content" value="/WEB-INF/views/alphaPet/{1}/{2}.jsp"/>
+	</definition> -->
+<!--                            alphaPet 타일즈 설정 끝                                                                          -->
+</tiles-definitions>

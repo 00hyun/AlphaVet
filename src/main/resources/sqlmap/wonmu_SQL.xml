@@ -1,0 +1,585 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.mapper.WonmuMapper">
+
+	<insert id="addPet" parameterType="memPatiVO">
+	insert all
+	into PATIENT
+	(PAT_ID, MEM_ID, ANIMAL_CD, CLI_CD, PAT_NAME, PAT_BIRTH, PAT_GENDER,
+	PAT_WEIGHT, PAT_ADD1, PAT_ADD2, PAT_CHIP, PAT_REGNM, PAT_ABANDON, 
+	PREGNANT_CHECK, PAT_NEW,PAT_MEMO,PAT_PROFILE)
+	
+	VALUES (PATIENT_SEQ.nextval, MEMBER_SEQ.nextval,
+	#{animalCd},#{cliCd},#{patName},#{patBirth},#{patGender},
+	#{patWeight},#{patAdd1},#{patAdd2},#{patChip},#{patRegnm},#{patAbandon},
+	#{pregnantCheck},#{patNew},#{patMemo},#{patProfile})
+	
+	into MEMBER (MEM_ID, cli_cd, MEM_NAME, MEM_TEL, MEM_AGREE)
+	values (MEMBER_SEQ.nextval,#{cliCd},#{memName},#{memTel},'Y')
+	select * from dual
+	</insert>
+	
+	<select id="PraRoomList" resultType="pra_RoomVO">
+			select a.*, b.emp_name
+            from pra_room a join EMPLOYEES b
+            on a.emp_id = b.EMP_ID
+        order by PRA_ROOM_NM asc
+	</select>
+	
+	<select id="autocomplete" parameterType="map" resultType="map">
+		SELECT 
+			 a.PAT_ID
+			,a.PAT_NAME
+	        ,b.MEM_TEL
+		FROM PATIENT a 
+	    inner join member b on a.mem_id = b.mem_id
+		WHERE PAT_NAME LIKE  '%'|| #{value} || '%'
+	</select>
+	
+	<select id="patDetail" parameterType="memPatiVO" resultType="memPatiVO">
+		select a.PAT_ID, a.MEM_ID, a.ANIMAL_CD, a.CLI_CD, a.PAT_NAME, a.PAT_BIRTH, a.PAT_GENDER,
+		a.PAT_WEIGHT, a.PAT_ADD1, a.PAT_ADD2, a.PAT_CHIP, a.PAT_REGNM, a.PAT_ABANDON, 
+		a.PREGNANT_CHECK, a.PAT_NEW, a.PAT_MEMO, a.PAT_PROFILE,
+		b.CLI_CD, b.MEM_NAME, b.MEM_TEL, b.MEM_AGREE
+		from patient a inner join member b
+		on a.mem_id = b.mem_id
+		where a.PAT_NAME = #{patName} and b.mem_tel = #{memTel}
+	</select> 
+	
+	<insert id="startReceipt" parameterType="receiptVO">
+		   INSERT INTO RECEIPT
+      (
+       REC_NM, PAT_ID, PRA_ROOM_NM, ANIMAL_CD, REC_DATE, REC_PURPOSE,REC_STATUS
+      )
+      SELECT
+       RECEIPT_SEQ.nextval, #{patId}, #{praRoomNm}, #{animalCd}, sysdate, #{recPurpose},'진료대기'
+      from dual
+      
+      where not exists
+      (
+       select pat_id from receipt where pat_id = #{patId} and rec_status like '진료' || '%'
+      )
+
+	</insert>
+	
+	<select id="patientList" resultType="recPatientVO">
+		select b.pat_name, a.PRA_ROOM_NM, a.rec_status, a.rec_nm, a.pat_id
+		,b.PAT_GENDER,b.PAT_BIRTH,b.PAT_MEMO
+		from receipt a left join PATIENT b
+		on b.pat_id=a.pat_id
+		where a.PRA_ROOM_NM = #{praRoomNm} and a.REC_STATUS = '진료대기'
+		 or a.PRA_ROOM_NM = #{praRoomNm} and a.REC_STATUS = '진료중'
+		order by a.REC_STATUS DESC, a.rec_nm asc
+	</select>
+	
+<!-- 	<select id="receiptList" resultType="recPatientVO">
+	select distinct (d.pay_nm),c.pra_cd,b.pat_name, a.PRA_ROOM_NM, a.rec_status, a.rec_nm, a.pat_id,TO_CHAR(a.REC_DATE, 'yyyy-mm-dd')
+			,b.PAT_GENDER,b.PAT_BIRTH,b.PAT_ID
+		from receipt a left join PATIENT b
+		on a.pat_id=b.pat_id
+        left join pra c
+        on b.pat_id = c.pat_id
+         left join payment d
+         on d.pra_cd = c.pra_cd
+		where a.REC_STATUS = '수납대기' or  a.REC_STATUS = '수납완료'
+        and TO_CHAR(a.REC_DATE, 'yyyy-mm-dd') = TO_CHAR(sysdate,'YYYY-MM-DD')
+		order by d.pay_nm DESC, a.REC_STATUS asc, a.REC_NM asc
+		
+		select b.pat_name, a.PRA_ROOM_NM, a.rec_status, a.rec_nm, a.pat_id,TO_CHAR(a.REC_DATE, 'yyyy-mm-dd')
+			,b.PAT_GENDER,b.PAT_BIRTH,b.PAT_MEMO
+		from receipt a left join PATIENT b
+		on b.pat_id=a.pat_id
+		where a.REC_STATUS = '수납대기' or  a.REC_STATUS = '수납완료'
+        and TO_CHAR(a.REC_DATE, 'yyyy-mm-dd') = TO_CHAR(sysdate,'YYYY-MM-DD')
+		order by a.REC_STATUS asc, a.REC_NM asc
+	</select> -->
+	
+	
+	<select id="receiptList" resultType="recPatientVO">
+<!-- 	select c.pra_status, c.pra_cd,b.pat_name, a.PRA_ROOM_NM, a.rec_status, a.rec_nm, a.pat_id,TO_CHAR(a.REC_DATE, 'yyyy-mm-dd')
+				,b.PAT_GENDER,b.PAT_BIRTH,b.PAT_MEMO
+	from receipt a join patient b
+	on a.pat_id = b.pat_id
+	join pra c
+	on b.pat_id = c.pat_id
+	where a.rec_status = '수납대기'and c.pra_status = 1 or a.rec_status = '입원대기'and c.pra_status = 1
+	order by c.PRA_CD ASC -->
+	
+	select c.pat_name, c.pat_id, d.rec_status, d.pra_cd,c.PAT_GENDER,c.PAT_BIRTH,c.PAT_MEMO
+		from patient c join (
+            select b.rec_status, b.rec_nm, b.pat_id, a.pra_cd, a.PRA_STATUS
+		    from pra a, receipt b 
+		    where b.rec_nm = a.rec_nm
+		    and (rec_status = '수납대기' or rec_status = '입원대기')
+             and pra_status='1')d
+		on c.pat_id = d.pat_id
+		order by d.pra_cd asc
+	
+	</select>
+	
+	
+	<select id="receiptList2" resultType="recPatientVO">
+<!-- 	select c.pat_id, c.pat_name, d.pay_nm, d.pra_cd
+		from patient c join (select b.PAT_ID, a.pay_nm, b.pra_cd
+                    from payment a join pra b
+                    on a.pra_cd = b.pra_cd
+                    where TO_CHAR(pay_date, 'yyyy-mm-dd') = TO_CHAR(sysdate,'YYYY-MM-DD')
+                    order by pay_nm DESC)d
+		on c.pat_id = d.pat_id
+		order by d.pay_nm desc -->
+		select e.pat_name, e.pat_id, f.rec_status, f.pay_nm, f.pra_cd
+		from patient e join (select c.rec_nm, c.rec_status,  d.pat_id, d.pay_nm,d.pra_cd
+		                        from receipt c join (select b.pra_cd, b.pat_id, b.rec_nm, a.PAY_NM
+		                                             from payment a join pra b
+		                                             on b.pra_cd = a.pra_cd
+		                                              where TO_CHAR(a.pay_date, 'yyyy-mm-dd') = TO_CHAR(sysdate,'YYYY-MM-DD'))d
+		                        on d.rec_nm = c.rec_nm)f
+		on f.pat_id= e.pat_id
+		where f.rec_status = '수납완료'
+		order by f.pay_nm desc
+	</select>
+	
+	
+	<!-- <select id="receiptList2" resultType="recPatientVO">
+		select b.pat_name, a.PRA_ROOM_NM, a.rec_status, a.rec_nm, a.pat_id
+			,b.PAT_GENDER,b.PAT_BIRTH,b.PAT_MEMO
+		from receipt a left join PATIENT b
+		on b.pat_id=a.pat_id
+		where a.REC_STATUS = '수납대기'
+		order by a.REC_STATUS asc, a.REC_NM asc
+	</select> -->
+	
+	<update id="statusUpdate" parameterType="string" >
+<!-- 		UPDATE RECEIPT SET REC_STATUS = '수납완료'
+		where PAT_ID = #{patId} -->
+		        UPDATE RECEIPT SET REC_STATUS = '수납완료'
+		where rec_nm = (select rec_nm
+                        from pra
+                        where pra_cd =#{praCd})
+		
+	</update>
+	
+	<select id="selectPra" parameterType="memPatiVO" resultType="PraVO">
+		select c.*, TO_CHAR(c.pra_date,'YYYY"년 "MM"월 "DD"일 "')as pra_date2
+		from patient a inner join member b
+		on b.mem_id = a.mem_id
+        join PRA c
+        on a.pat_id = c.PAT_ID
+        where a.PAT_NAME = #{patName} and b.mem_tel = #{memTel}
+        order by c.PRA_DATE DESC		
+	</select>
+	
+	<update id="updatePatImage" parameterType="PatientVO">
+	    UPDATE patient SET PAT_PROFILE = #{patProfile}
+		WHERE pat_id =  #{patId}
+	</update>
+	
+	<update id="updatePat" parameterType="memPatiVO">
+		UPDATE patient SET PAT_ADD1=#{patAdd1}, PAT_ADD2=#{patAdd2},PREGNANT_CHECK=#{pregnantCheck}
+		WHERE pat_id = #{patId}
+	</update>  
+	
+	<update id="updatePat2" parameterType="memPatiVO">
+		
+		update member 
+		set mem_name=#{memName}, mem_tel = #{memTel}
+		where mem_id = (select mem_id 
+		                    from patient
+		                    where pat_id = #{patId})
+	</update>
+	
+	<select id="patIdSearch" parameterType="string" resultType="MemPatiVO">
+		select 
+		a.* , b.*
+		from PATIENT a
+		join MEMBER b
+		on a.mem_id = b.mem_id
+		where a.pat_Id = #{patId}
+	</select>
+	
+	<update id="updateWeight" parameterType="PatientVO"  >
+		update patient 
+		set PAT_WEIGHT = #{patWeight}
+		where pat_id=#{patId}
+	</update>
+	
+	<update id="updateRec" parameterType="string" >
+		update receipt 
+		set PRA_ROOM_NM = #{praRoomNm}
+		REC_PURPOSE = #{recPurpose}
+		where pat_id=#{patId}
+	</update>
+	
+	<select id="selectRecPat" parameterType="string" resultType="RecPatientVO">
+		select a.*, b.*
+		from receipt a join patient b
+		on b.pat_id = a.pat_id  
+		where a.pat_id = #{patId}
+	</select>
+	
+	<select id="showReceipt" parameterType="recPatientVO" resultType="recPatientVO">
+select *
+	from receipt
+	where pat_id = #{patId}
+    and rec_nm =#{recNm}
+	</select>
+	
+	<select id="vaccineList" parameterType="string" resultType="VaccineVO" >
+	select TO_CHAR(vaccine_date,'YYYY"년 "MM"월 "DD"일 "')as pra_date2,vaccine.*
+	from vaccine
+	where pat_id = (select a.PAT_ID
+				from patient a inner join member b
+				on a.mem_id = b.mem_id
+				where a.PAT_NAME = #{patName} and b.mem_tel = #{memTel})
+	order by vaccine_date desc
+	</select>
+	
+	<select id="countWard" resultType="WardVO">
+	select *
+	from ward
+	</select>
+		            
+	<select id="countCage" resultType="CageVO" parameterType="int">
+	select *
+	from cage
+	where WARD_NM=#{wardNm}
+	</select>
+	
+	<select id="vacantCage" parameterType="int" resultType="CageVO">
+	select cage_nm 
+	from cage 
+	where WARD_NM = #{wardNm}
+    and CAGE_STATUS = '0'
+	order by cage_nm asc
+	</select>
+	
+	<insert id="insertEneter" parameterType="StayVO">
+	insert into stay 
+	(ST_CD, PRA_CD, PAT_ID, CAGE_NM, CLI_CD, EMP_ID, ST_START_DATE, ST_STATE,ST_DAYS, ST_TOTAL, ST_FOOD_TOTAL,ST_FOOD_NUM)
+	values ('a'||STAY_SEQ.NEXTVAL,#{praCd}, #{patId}, #{cageNm}, 'h001', #{empId}, sysdate, 'Y','0','0','0','0')
+	</insert>
+	
+	<select id="checkEneter" parameterType="string" resultType="int">
+ 	select count(*) from stay
+	where pra_cd = #{praCd} and st_state='Y'
+	</select>
+	
+	<select id="moneyDetail" parameterType="string" resultType="EnterVO">
+	select a.PRE_IN_TOTAL, a.TEST_TOTAL, a.PRA_PRICE, b.ST_FOOD_TOTAL, b.ST_STATE
+	from pra a  LEFT OUTER JOIN  stay b
+	on a.pat_id = b.pat_id
+	where a.pat_id = #{patId}
+	</select>
+	
+	
+	<select id="confirmPraCd" parameterType="string" resultType="string">
+	 select b.pra_cd
+	from patient a, pra b
+	where a.pat_id = b.pat_id
+	and b.pat_id = #{patId}
+	and b.pra_status = '1'
+	</select>
+	
+	<select id="preInDetail" parameterType="string" resultType="PreInDrugVO">
+<!-- 	select d.item_name, e.PRE_NM,e.PRA_CD, e.DRUG_NM,e.PRE_IN_TYPE, e.DRUG_TYPE, e.PRE_IN_AMOUNT, 
+	e.PRE_IN_CNT, e.PRE_IN_PRICE
+	from drug d join (select c.PRE_NM, c.PRA_CD, c.DRUG_NM, c.PRE_IN_TYPE,
+					 c.DRUG_TYPE, c.PRE_IN_AMOUNT, c.PRE_IN_CNT, c.PRE_IN_PRICE
+						from pre_in c
+						where c.pra_cd = (select b.pra_cd
+											from patient a, pra b
+											where a.pat_id = b.pat_id
+											and b.pat_id = #{patId}
+											and b.pra_status = '1') )e
+	on e.DRUG_NM = d.DRUG_NM -->
+	</select>
+	
+	<select id="testDetail" parameterType="string" resultType="TestVO">
+	select d.TEST_CD, d.TEST_TYPE, d.TEST_NAME, d.TEST_PRICE
+	from test d join (select  c.TD_NM, c.PRA_CD, c.TEST_CD, c.TD_DATE
+			from TEST_DETAIL c
+			where c.pra_cd = (select b.pra_cd
+							from patient a, pra b
+							where a.pat_id = b.pat_id
+							and b.pat_id =#{patId}
+							and b.pra_status = '1'))e
+	on e.test_cd = d.test_cd
+	</select>
+	
+	<update id="praStatusUpdate" parameterType="string">
+<!-- 	update pra set PRA_STATUS = '2'
+	where pat_id = #{patId} -->
+		update pra set PRA_STATUS = '2'
+		where pra_cd = #{patCd}
+	
+	</update>
+	
+	<select id="reservationList" resultType="reservationVO">
+	<![CDATA[
+	        SELECT 
+			A.RES_NM, A.EMP_ID, A.PAT_ID, TO_CHAR(A.RES_START_DATE, 'yyyy-mm-dd') as resStartDate, TO_CHAR(A.RES_START_DATE, 'HH24:MI') as resTime, B.PAT_NAME, C.EMP_NAME
+		FROM RESERVATION A LEFT JOIN PATIENT B
+			ON A.PAT_ID = B.PAT_ID
+		JOIN EMPLOYEES C
+		    ON A.EMP_ID = C.EMP_ID
+            where TO_CHAR(A.RES_START_DATE, 'yyyy-mm-dd') = TO_CHAR(SYSDATE,'YYYY-MM-DD')
+            and a.res_memo is null
+            order by resTime asc
+	]]>
+	</select>
+	
+	<update id="paymentInsert" parameterType="PaymentVO">
+	insert into PAYMENT (PAY_NM, PRA_CD, PRA_TOTAL, PAY_CASH, PAY_CARD, PAY_TOTAL, PAY_DATE)
+	values(PAYMENT_SEQ.nextval, #{praCd}, #{praTotal}, #{payCash}, #{payCard}, #{payTotal},sysdate)
+	</update>
+	
+	<update id="reservationUpdate" parameterType="int">
+	update RESERVATION SET res_memo = '1'
+	where res_nm = #{resNm}
+	</update>
+	
+	<insert id="insertMemo" parameterType="PatMemoVO">
+	 insert INTO PAT_MEMO values(PAT_MEMO_SEQ.NEXTVAL ,#{patId},#{empId},sysdate,#{patMemoCon})
+	</insert>
+	
+	<select id="showMemo" parameterType="string" resultType="PatMemoVO">
+       select b.EMP_PROFILE,b.EMP_JOB, a.PAT_ID, a.EMP_ID, TO_CHAR(a.PAT_MEMO_DATE, 'yyyy-mm-dd HH24:mi:SS') as memoDate,TO_CHAR(a.PAT_MEMO_DATE, 'yyyy-mm-dd HH24:mi') as memoDate2 ,a.PAT_MEMO_CON, b.emp_name
+        from pat_memo a, EMPLOYEES b
+        where b.emp_id = a.emp_id
+        and pat_id =#{patId}order by memoDate asc
+	</select>
+	
+	<select id="countAppReceipt" resultType="int">
+	     select COUNT(*) as cnt
+        from appreceipt
+        where WONMU_CHECK = 'N'
+	</select>
+	
+
+	
+	<select id="appReceiptList" resultType="AppReceiptVO">
+      	select c.mem_tel, d.pat_name, d.pat_id,d.pat_gender, d.pat_memo,d.wonmu_check
+        from member c inner join ( select a.pat_name,b.pat_id, a.mem_id,a.pat_gender, a.pat_memo, b.wonmu_check
+                                from appreceipt b inner join patient a
+                                on a.pat_id= b.pat_id
+                                where b.wonmu_check = 'N')d
+        on c.mem_id = d.mem_id
+	</select>
+	
+	<update id="appUpdate" parameterType="string">
+	    update appreceipt set  WONMU_CHECK = 'Y'
+        where pat_id = #{patId}
+	</update>
+	
+<!-- 해당 진료코드에 해당하는 검사항목과 비용 -->
+	<select id="praCdTest" parameterType="string" resultType="TestVO">
+	select b.*
+	from test b join test_detail c
+	on b.test_cd = c.test_cd
+	where c.pra_cd = #{praCd}
+	</select>
+	
+	<select id="praCdDrug" parameterType="string" resultType="DrugVO">
+<!--   	    	select a.drug_nm, a.item_name,a.drug_price,  (b.PRE_IN_AMOUNT * b.PRE_IN_CNT) as PRE_IN_AMOUNT
+		from drug a join (select drug_Nm, pra_cd, PRE_IN_AMOUNT,PRE_IN_CNT
+		                    from PRE_IN
+		                    where pra_cd= #{praCd})b
+		on a.drug_nm = b.drug_nm -->
+  select b.drug_nm, a.ITEM_NAME, b.pre_in_amount, b.pre_in_cnt, b.pre_in_days, a.DRUG_PRICE
+    from drug a join ( select DRUG_NM,PRE_IN_AMOUNT,PRE_IN_CNT,PRE_IN_PRICE,PRE_IN_DAYS
+                    from PRE_IN
+                    where pra_cd = #{praCd})b
+    on a.DRUG_NM = b.DRUG_NM
+	</select>
+	
+<!-- 	해당 진료코드에 해당하는 진료비 -->
+	<select id="praCdPra" parameterType="string" resultType="PraVO">
+	select a.PRA_PRICE, a.PAT_ID, a.PRA_DATE, b.pat_name
+	from pra a join patient b 
+    on a.pat_id = b.pat_id
+	where a.pra_cd = #{praCd}
+	</select>
+
+	<select id="praCdVaccine" parameterType="string" resultType="VaccineDetailVO">
+	select a.*
+	from VACCINE_DETAIL a join (select VD_NM
+	                            from VACCINE
+	                            where PRA_CD =#{praCd})b
+	on a.VD_NM = b.VD_NM
+	</select>
+
+	
+<!-- 	입원에서 먹은 식이 가져옴 -->
+	<select id="praStayFood" parameterType="string" resultType="EnterVO">
+	select e.food_name, ( sum(e.food_price) / COUNT(e.food_name))as food_price,COUNT(e.food_name) AS food_nm , sum(e.food_price) as total 
+    from FOOD e join(select c.food_dt_nm, c.FOOD_NM
+	                    from FOOD_DETAIL c join (select b.ST_TOTAL, b.ST_FOOD_TOTAl, b.ST_CD
+	                                            from pra a join stay b 
+	                                            on a.pat_id = b.pat_id
+	                                            where a.pra_cd =#{praCd})d
+	                    on c.st_cd = d.st_cd)f
+	on e.food_nm = f.food_nm
+	group by e.food_name
+	order by e.food_name asc
+    
+	</select>
+	
+	
+	
+	<!-- 	입원을 포함한 (모든비용) 입원한사람만 계산 가능 -->
+	<select id="finalSum" parameterType="string" resultType="int">
+	   select sum( NVL(st_total,0) + NVL(PRE_IN_TOTAL,0)+ NVL(TEST_TOTAL,0)+ NVL(PRA_PRICE,0)+ NVL(VACCINE_PRICE,0)) as total
+		   from ( select a.st_total, b.*
+		    from stay a join (
+		                    select PRE_IN_TOTAL, TEST_TOTAL, PRA_PRICE, VACCINE_PRICE, pat_id
+		                    from pra
+		                    where pra_cd =#{praCd})b
+		    on a.pat_id = b.pat_id)
+	</select>
+<!-- 	입원을 제외한 비용 -->
+	<select id="sum" parameterType="string" resultType="int">
+<!-- 	                select sum(PRE_IN_TOTAL+ TEST_TOTAL+ PRA_PRICE+ VACCINE_PRICE) as total
+		                    from pra
+		                    where pra_cd = #{praCd} -->
+		                     select
+                          sum ( NVL(PRE_IN_TOTAL,0)+ NVL(TEST_TOTAL,0)+ NVL(PRA_PRICE,0)+ NVL(VACCINE_PRICE,0) )
+		                    from pra
+		                    where pra_cd =  #{praCd}
+	</select>
+<!-- 	입원을 한 자의 순수 입원비용 (8의 배수) -->
+	<select id="onlyStay" parameterType="string" resultType="int">
+    select sum(st_total - st_food_total) as st_total
+    from stay
+    where pra_cd =  #{praCd}
+	</select>
+	
+	<select id="searchPatMemo" parameterType="memPatiVO" resultType="string">
+<!-- 	<select id="searchPatMemo" parameterType="memPatiVO" resultType="PatMemoVO"> -->
+	<!-- select PAT_MEMO_CON
+	from PAT_MEMO
+	where pat_id = (select a.pat_id
+	                from patient a join member b
+	                on a.mem_id = b.mem_id
+	                where b.mem_tel =#{memTel} and a.pat_name=#{patName}) -->
+	                
+	select a.pat_id
+                from patient a join member b
+                on a.mem_id = b.mem_id
+                where b.mem_tel =#{memTel} and a.pat_name=#{patName}
+	                
+	</select>
+	
+<!-- 	입원안한사람의 계산-->
+	<select id="selectPracd" parameterType="string" resultType="EnterVO">
+	 select PRE_IN_TOTAL, TEST_TOTAL, PRA_PRICE, VACCINE_PRICE, pat_id
+		                    from pra
+		                    where pra_cd = #{praCd}
+	</select>
+	
+<!-- 	입원한사람의 계산 -->
+	<select id="selectPracd2" parameterType="string" resultType="EnterVO">
+  	select ST_FOOD_TOTAl, st_total,test_total,PRE_IN_TOTAL,PRA_PRICE,VACCINE_PRICE
+		   from ( select a.st_total,a.ST_FOOD_TOTAL, b.*
+		    from stay a join (
+		                    select PRE_IN_TOTAL, TEST_TOTAL, PRA_PRICE, VACCINE_PRICE, pat_id
+		                    from pra
+		                    where pra_cd = #{praCd})b
+		    on a.pat_id = b.pat_id)
+	</select>
+	
+	<update id="updateEnter" parameterType="string">
+	   update receipt 
+   set rec_status = '입원중'
+   where rec_nm = (   select rec_nm
+    from pra
+    where pra_cd = #{praCd})
+	</update>
+	
+	<update id="updateCageStatus" parameterType="int">
+	update cage set CAGE_STATUS = '1'
+    where cage_nm = #{cageNm}
+	</update>
+	
+<!-- 	입원여부를 체크한다. -->
+	<select id="checkEnterYN" parameterType="string" resultType="string">
+	select st_cd
+            from stay 
+            where pra_cd = #{praCd}
+	</select>
+	
+	<select id="praCdPreOut" parameterType="string" resultType="PreOutVO">
+	select c.ITEM_NAME , d.*
+	from drug c join (select b.*
+	                    from pra a join pre_out b
+	                    on a.pra_cd = b.pra_cd
+	                    and b.pra_cd = #{praCd})d
+	on c.drug_nm = d.drug_nm
+	</select>
+	
+	<select id="docReceipt" parameterType="string" resultType="MemPatiVO">
+    select f.*, e.emp_name
+    from EMPLOYEES e join (    select c.mem_tel, c.mem_name,d.pat_id,d.pat_name, d.ANIMAL_CD, d.pat_gender, d.pat_weight, trunc(MONTHS_BETWEEN(sysdate, d.pat_birth))as pat_birth,d.emp_id
+                                from member c join (    select b.pat_id,b.pat_name, b.ANIMAL_CD, b.pat_gender, b.pat_birth, b.pat_weight, b.mem_id, a.emp_id
+                                                        from pra a join patient b
+                                                        on b.pat_id = a.pat_id
+                                                        where a.pra_cd = #{praCd})d
+                                on d.mem_id = c.mem_id)f
+    on e.emp_id = f.emp_id
+	</select>
+	
+	<select id="countPreOut" parameterType="string" resultType="int">
+	                        select count(*)
+	                    from pra a join pre_out b
+	                    on a.pra_cd = b.pra_cd
+	                    and b.pra_cd = #{praCd}
+	
+	</select>
+	
+	<select id="praCdDate" parameterType="string" resultType="PraVO">
+	    SELECT TO_CHAR(pra_date, 'YY') as yy, TO_CHAR(pra_date, 'MM') as MM, TO_CHAR(pra_date, 'dd') as DD,pra_cd
+    from pra
+    where pra_cd =  #{praCd}
+    </select>
+    
+    <select id="confirmWeight" parameterType="MemPatiVO" resultType="PraVO">
+    select b.rec_nm, a.pra_cd, TO_CHAR(a.pra_date,'YYYY"년"MM"월"DD"일"')as pra_date2,TO_CHAR(a.pra_date,'YYYY"."MM"."DD"."')as pra_date3, a.PRA_WEIGHT
+	from pra a join (select rec_nm
+	                from receipt
+	                where pat_id = (select x.pat_id
+	                from patient x join member z
+	                on x.mem_id = z.mem_id
+	                where z.mem_tel =#{memTel} and x.pat_name=#{patName}) )b
+	on b.rec_nm = a.rec_nm
+	order by b.rec_nm asc
+    </select>
+    
+
+    <select id="doc2select" parameterType="string" resultType="MemPatiVO">
+	select a.mem_name, b.pat_add1, b.pat_add2, b.mem_id,b.animal_cd, b.pat_name, b.pat_birth as pat_birth2, b.pat_gender
+	from member a join (select pat_add1, pat_add2, mem_id, animal_cd, pat_name, pat_birth, pat_gender
+	from patient
+	where pat_id = (select pat_id
+		                from pra
+		                where pra_cd = #{praCd}))b
+		on a.mem_id = b.mem_id
+    </select>
+	
+	<select id="doc2pra" parameterType="string" resultType="DocFileVO2">
+		select a.DIS_NAME, b.*
+		from DIS_DETAIL a join (select a.* , b.pra_date
+		                        from DOC_FILE a join pra b
+		                        on a.pra_cd = b.pra_cd
+		                        where a.PRA_CD =  #{praCd} )b
+		on b.pra_cd = a.pra_cd
+	</select>
+	
+	
+	
+	<select id="praRoomDoctor" parameterType="string" resultType="EmpVO">
+	select a.EMP_NAME
+	from EMPLOYEES a join PRA_ROOM b 
+	on a.emp_id = b.emp_id
+	order by b.PRA_ROOM_NM asc
+	</select>
+	
+</mapper>

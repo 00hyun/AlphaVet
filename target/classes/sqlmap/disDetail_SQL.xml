@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.mapper.DisDetailMapper">
+
+	<select resultType="DisDetailVO" parameterType="string" id="selectDisDetailList">
+		SELECT * FROM DIS_DETAIL
+		WHERE PRA_CD=#{praCd}
+	</select>
+
+	<insert parameterType="map" id="insertDisDetail">
+		INSERT INTO DIS_DETAIL(
+			DIS_DT_NM, DIS_CD, PRA_CD, DIS_NAME
+		)
+		
+		VALUES(
+			(
+				SELECT CLI_CD FROM EMPLOYEES
+				WHERE EMP_ID=#{empId}
+			)
+			|| '-'
+			|| (
+				SELECT PRA_CD FROM PRA
+				WHERE REC_NM=#{recNm}
+			)
+			|| '-' || 'o' || #{disCd},
+			#{disCd},
+			(
+				SELECT PRA_CD FROM PRA
+				WHERE REC_NM=#{recNm}
+			),
+			( SELECT DIS_KOR_NAME FROM DISEASE WHERE DIS_CD=#{disCd} )
+		)
+	</insert>
+
+</mapper>

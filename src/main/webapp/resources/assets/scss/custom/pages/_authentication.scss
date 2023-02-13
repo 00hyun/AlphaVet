@@ -1,0 +1,94 @@
+//
+// authentication.scss
+//
+
+.home-btn {
+    position: absolute;
+    top: 15px;
+    right: 25px;
+}
+
+.img-overlay {
+    background: url(../images/overlay-1.png);
+    background-size: cover;
+    background-position: top;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+.signin-other-title {
+    position: relative;
+    &:after {
+        content: "";
+        position: absolute;
+        width: 100%;
+        height: 1px;
+        left: 0;
+        right: 0;
+        background-color: $border-color;
+        top: 10px;
+    }
+
+    .title {
+        display: inline-block;
+        position: relative;
+        z-index: 9;
+        background-color: $card-bg;
+        padding: 2px 16px;
+    }
+}
+
+.auth-body-bg {
+    background-color: $card-bg;
+}
+
+.authentication-bg {
+    background-image: url("../images/auth-img.png");
+    background-size: cover;
+    background-position: center;
+    .bg-overlay {
+        background-color: #292626;
+    }
+}
+
+.authentication-page-content {
+    height: 100vh;
+    display: flex;
+}
+
+.auth-form-group-custom {
+    position: relative;
+    .form-control {
+        height: 60px;
+        padding-top: 28px;
+        padding-left: 60px;
+    }
+
+    label {
+        position: absolute;
+        top: 7px;
+        left: 60px;
+    }
+
+    .auti-custom-input-icon {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        left: 19px;
+        font-size: 24px;
+        color: $primary;
+    }
+}
+
+.auth-logo {
+    .logo {
+        &.logo-light {
+            display: $display-none;
+        }
+        &.logo-dark {
+            display: $display-block;
+        }
+    }
+}

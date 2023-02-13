@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co">
+
+<!-- 	<insert id="ordersetMapper_insertOrderset" parameterType="ordersetVO" useGeneratedKeys="true"> -->
+<!-- 		<selectKey order="BEFORE" keyProperty="orderNm" resultType="int"> -->
+<!-- 			SELECT ORDERSET_SEQ.NEXTVAL FROM DUAL -->
+<!-- 		</selectKey> -->
+<!-- 		INSERT INTO ORDERSET( -->
+<!-- 			ORDER_NM, EMP_ID, ORDER_NAME, ORDER_CON, ORDER_SET_CNT -->
+<!-- 		) VALUES( -->
+<!-- 			#{orderNm}, #{empId}, #{orderName}, #{orderCon}, 0 -->
+<!-- 		) -->
+<!-- 	</insert> -->
+	
+<!-- 	<insert id="ordersetMapper_insertOrderDetail" parameterType="orderDetailVO"> -->
+<!-- 		INSERT INTO ORDER_DETAIL( -->
+<!-- 			ORDER_CD, ORDER_NM, ORDER_DT_TYPE, ORDER_DT_NAME -->
+<!-- 		) VALUES( -->
+<!-- 			#{orderCd}, #{orderNm}, #{orderDtType}, #{orderDtName} -->
+<!-- 		) -->
+<!-- 	</insert> -->
+	
+	
+	
+	<resultMap type="ordersetVO" id="ordersetMap">
+		<result property="orderNm" column="ORDER_NM" />
+		<result property="orderName" column="ORDER_NAME" />
+		<result property="orderCon" column="ORDER_CON" />
+		<result property="orderSetCnt" column="ORDER_SET_CNT" />
+		<collection property="orderDetailVOList" resultMap="orderDetailMap"></collection>
+	</resultMap>
+	<resultMap type="orderDetailVO" id="orderDetailMap">
+		<result property="orderCd" column="ORDER_CD"/>
+		<result property="drugIo" column="DRUG_IO"/>
+		<result property="orderDtType" column="ORDER_DT_TYPE"/>
+		<result property="orderDtName" column="ORDER_DT_NAME"/>
+	</resultMap>
+	<select id="ordersetMapper_selectOrderSetList" resultMap="ordersetMap" parameterType="string">
+		select 
+		    a.order_nm,
+		    a.order_name,
+		    a.order_con,
+		    a.order_set_cnt,
+		    b.order_cd,
+		    b.order_dt_type,
+		    b.order_dt_name,
+		    nvl(c.drug_io, 'n') as drug_io
+		from orderset a
+		left outer join order_detail b on a.order_nm = b.order_nm
+		left outer join drug c on to_char(c.drug_nm) = b.order_cd
+		where a.emp_id = #{empId}
+	</select>
+
+</mapper>

@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.mapper.PraMapper">
+
+	<sql id="subPraCd">
+		(
+			SELECT P.PRA_CD
+			FROM PATIENT PT INNER JOIN RECEIPT RC
+			     ON RC.PAT_ID=PT.PAT_ID
+			     INNER JOIN PRA P
+			     ON P.PAT_ID=PT.PAT_ID
+			WHERE RC.REC_NM=#{recNm}
+			      AND RC.PAT_ID=#{patId}
+				  AND RC.REC_STATUS='진료중'
+			      AND P.EMP_ID=#{empId}
+			      AND P.PRA_STATUS=1
+			      AND TO_CHAR(RC.REC_DATE) = TO_CHAR(SYSDATE)
+			      AND TO_CHAR(P.PRA_DATE) = TO_CHAR(SYSDATE)
+		)
+	</sql>
+
+	<select resultType="praVO" parameterType="string" id="selectPraList">
+		SELECT * FROM PRA
+		WHERE PAT_ID = #{patId}
+		ORDER BY PRA_DATE ASC
+	</select>
+	
+	<select resultType="praVO" parameterType="string" id="selectPraListPast">
+		SELECT * FROM PRA
+		WHERE PAT_ID = #{patId}
+			  AND TO_CHAR(PRA_DATE) != TO_CHAR(SYSDATE)
+		ORDER BY PRA_DATE ASC
+	</select>
+	
+	<insert parameterType="praVO" id="insertPra">
+		INSERT INTO PRA(
+		    PRA_CD,
+		    CLI_CD,
+		    EMP_ID,
+		    PAT_ID,
+		    PRA_DEPT,
+		    PRA_DATE,
+		    PRA_WEIGHT,
+		    SUR_CHECK,
+		    STAY_CHECK,
+		    PRE_OUT_CHECK,
+		    REC_NM
+		)
+		
+		VALUES(
+		    'p' || LPAD(PRA_SEQ.NEXTVAL, 4, 0),
+		    #{cliCd},
+		    #{empId},
+		    #{patId},
+		    #{praDept},
+		    SYSDATE,
+		    #{praWeight},
+		    'N',
+		    'N',
+		    'N',
+		    #{recNm}
+		)
+	</insert>
+	
+	<update parameterType="praVO" id="mergePra">
+		MERGE INTO PRA P
+
+		USING RECEIPT RC
+		    ON (
+		    	RC.REC_STATUS='진료중'
+		    	AND P.EMP_ID=#{empId}
+		        AND P.REC_NM=RC.REC_NM
+		    )
+		
+		WHEN MATCHED THEN
+		     UPDATE
+		        SET P.PRA_DATE=RC.REC_DATE
+		        
+		WHEN NOT MATCHED THEN
+		     INSERT(
+			    P.PRA_CD,
+			    P.CLI_CD,
+			    P.EMP_ID,
+			    P.PAT_ID,
+			    P.PRA_DEPT,
+			    P.PRA_DATE,
+			    P.PRA_WEIGHT,
+			    P.SUR_CHECK,
+			    P.STAY_CHECK,
+			    P.PRE_OUT_CHECK,
+			    P.REC_NM
+			)
+			
+			VALUES(
+			    'p' || LPAD(PRA_SEQ.NEXTVAL, 4, 0),
+			    #{cliCd},
+			    #{empId},
+			    #{patId},
+			    #{praDept},
+			    SYSDATE,
+			    #{praWeight},
+			    'N',
+			    'N',
+			    'N',
+			    #{recNm}
+			)
+	</update>
+	
+	<update parameterType="map" id="updatePraCon">
+		UPDATE PRA
+		SET PRA_CON=#{praCon}
+		WHERE REC_NM=#{recNm}
+	</update>
+	
+	<update id="preOutCheck">
+		UPDATE PRA
+		SET PRE_OUT_CHECK='Y'
+		WHERE REC_NM=#{recNm}
+	</update>
+	
+	<update parameterType="string" id="calcPreInPrice">
+		UPDATE PRA
+		SET PRE_IN_TOTAL=(
+		    SELECT NVL(SUM(PRE_IN_PRICE), 0) FROM PRE_IN
+		    WHERE PRA_CD=(
+		        SELECT P.PRA_CD FROM PRA P
+		        WHERE P.REC_NM=#{recNm}
+		    )
+		)
+		WHERE REC_NM=#{recNm}
+	</update>
+	
+	<update parameterType="string" id="calcTestDetailPrice">
+		UPDATE PRA
+		SET TEST_TOTAL=(
+		    SELECT SUM(T.TEST_PRICE)
+		    FROM TEST T INNER JOIN TEST_DETAIL TD
+		         ON TD.TEST_CD=T.TEST_CD
+		    WHERE TD.PRA_CD=(
+		        SELECT P.PRA_CD FROM PRA P
+		        WHERE P.REC_NM=#{recNm}
+		    )
+		)
+		WHERE REC_NM=#{recNm}
+	</update>
+	
+	<update parameterType="string" id="calcVaccinePrice">
+		UPDATE PRA
+		SET VACCINE_PRICE=(
+		    SELECT SUM(VD.VD_PRICE)
+		    FROM VACCINE_DETAIL VD INNER JOIN VACCINE VC
+		         ON VC.VD_NM=VD.VD_NM
+		    WHERE VC.PRA_CD=(
+		        SELECT P.PRA_CD FROM PRA P
+		        WHERE P.REC_NM=#{recNm}
+		    )
+		)
+		WHERE REC_NM=#{recNm}
+	</update>
+	
+	<select id="PraMapper_selectPraCd" parameterType="string" resultType="string">
+		SELECT PRA_CD
+		FROM PRA
+		WHERE REC_NM = #{recNm}
+	</select>
+	
+	<insert id="PraMapper_insertPraImgs" parameterType="praImgVO">
+		INSERT INTO PRA_IMG(
+			PRA_CD,
+			PRA_IMG1,
+			PRA_IMG2,
+			PRA_IMG3,
+			PRA_IMG4,
+			PRA_IMG5,
+			PRA_IMG6,
+			PRA_IMG7,
+			PRA_IMG8,
+			PRA_IMG9,
+			PRA_IMG10,
+			PRA_IMG11,
+			PRA_IMG12
+		)VALUES(
+			#{praCd},
+			#{praImg1},
+			#{praImg2},
+			#{praImg3},
+			#{praImg4},
+			#{praImg5},
+			#{praImg6},
+			#{praImg7},
+			#{praImg8},
+			#{praImg9},
+			#{praImg10},
+			#{praImg11},
+			#{praImg12}
+		)
+	</insert>
+	
+	
+	
+	<resultMap type="praVO" id="praMap">
+		<result property="praCd" column="PRA_CD"/>
+		<result property="praDate" column="PRA_DATE"/>
+		<result property="praCon" column="PRA_CON"/>
+		<result property="praWeight" column="PRA_WEIGHT"/>
+		<result property="praImg" column="PRA_IMG"/>
+		<collection property="preInList" resultMap="preInMap"></collection>
+		<collection property="preOutList" resultMap="preOutMap"></collection>
+		<collection property="disDetailList" resultMap="disDetailMap"></collection>
+		<collection property="testDetailList" resultMap="testDetailMap"></collection>
+	</resultMap>
+	<resultMap type="preInVO" id="preInMap">
+		<result property="itemName" column="IN_ITEM_NAME"/>
+		<result property="preInAmount" column="PRE_IN_AMOUNT"/>
+		<result property="preInCnt" column="PRE_IN_CNT"/>
+		<result property="preInDays" column="PRE_IN_DAYS"/>
+	</resultMap>
+	<resultMap type="preOutVO" id="preOutMap">
+		<result property="itemName" column="OUT_ITEM_NAME"/>
+		<result property="preOutAmount" column="PRE_OUT_AMOUNT"/>
+		<result property="preOutCnt" column="PRE_OUT_CNT"/>
+		<result property="preOutDays" column="PRE_OUT_DAYS"/>
+	</resultMap>
+	<resultMap type="disDetailVO" id="disDetailMap">
+		<result property="disName" column="DIS_NAME"/>
+	</resultMap>
+	<resultMap type="testDetailVO" id="testDetailMap">
+		<result property="testName" column="TEST_NAME"/>
+		<result property="tdDate" column="TD_DATE"/>
+	</resultMap>
+	<select id="PraMapper_getPraHistoryDetail" parameterType="string" resultMap="praMap">
+		select
+			a.pra_cd,
+		    a.pra_date,
+		    a.pra_con,
+		    a.pra_weight,
+		    (select item_name from drug where drug_nm = b.drug_nm) as in_item_name,
+		    b.pre_in_amount,
+		    b.pre_in_cnt,
+		    b.pre_in_days,
+		    (select item_name from drug where drug_nm = c.drug_nm) as out_item_name,
+		    c.pre_out_amount,
+		    c.pre_out_cnt,
+		    c.pre_out_days,
+		    d.dis_name,
+		    (select test_name from test where test_cd = e.test_cd) as test_name,
+            to_char(e.td_date, 'yyyy-MM-dd') as td_date,
+            (select coalesce(
+                    pra_img1,
+                    pra_img2,
+                    pra_img3,
+                    pra_img4,
+                    pra_img5,
+                    pra_img6,
+                    pra_img7,
+                    pra_img8,
+                    pra_img9,
+                    pra_img10,
+                    pra_img11,
+                    pra_img12
+            ) from pra_img where pra_cd = a.pra_cd) as pra_img
+		from pra a
+		left outer join pre_in b on a.pra_cd = b.pra_cd
+		left outer join pre_out c on a.pra_cd = c.pra_cd
+		left outer join dis_detail d on a.pra_cd = d.pra_cd
+		left outer join test_detail e on a.pra_cd = e.pra_cd
+		where a.rec_nm = #{recNm}
+			</select>
+	
+	<select id="PraMapper_selectPraImg" parameterType="string" resultType="praImgVO">
+		select
+			*
+		from
+			pra_img
+		where
+			pra_cd = #{praCd}
+	</select>
+	
+	<select resultType="PraVO" parameterType="string" id="selectPraByRec">
+		SELECT * FROM PRA
+		WHERE REC_NM=#{recNm}
+	</select>
+	
+</mapper>

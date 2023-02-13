@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.mapper.ReceiptMapper">
+
+	<select resultType="ReceiptVO" parameterType="int" id="selectReceipt">
+		SELECT * FROM RECEIPT
+		WHERE REC_NM=#{recNm}
+	</select>
+	
+	<select resultType="ReceiptVO" parameterType="string" id="selectReceiptInMedic">
+		SELECT * FROM RECEIPT
+		WHERE REC_STATUS='진료중'
+		      AND PAT_ID=#{patId}
+	</select>
+
+	<update parameterType="map" id="updateInStatus">
+		UPDATE RECEIPT
+		SET REC_STATUS='진료중'
+		WHERE REC_STATUS='진료대기'
+			  AND REC_NM=#{recNm}
+			  AND PAT_ID=#{patId}
+	</update>
+	
+	<update parameterType="map" id="updateOutStatus">
+		UPDATE RECEIPT RC
+		SET RC.REC_STATUS=
+		<choose>
+			<when test="recStatus != null and recStatus == 'payment'">
+				'수납대기'
+			</when>
+			<when test="recStatus != null and recStatus == 'stay'">
+				'입원대기'
+			</when>
+		</choose>
+		WHERE RC.REC_NM=#{recNm}
+	</update>
+
+</mapper>

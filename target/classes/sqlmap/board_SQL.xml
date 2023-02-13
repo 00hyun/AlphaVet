@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.mapper.MypageMapper">
+
+<insert id = "insertBoard" parameterType="boardVO" useGeneratedKeys="true">
+	<selectKey keyProperty="boNm" order = "BEFORE" resultType="int">
+		select BOARD_SEQ.NEXTVAL from dual
+	</selectKey>
+	insert into board (BO_NM, CATE_CD, EMP_ID, BO_TITLE, BO_CON) 
+		   values (#{boNm}, #{cateCd}, #{empId}, #{boTitle}, #{boCon})
+</insert>
+
+<select id = "selectBoard" parameterType="int" resultType="boardVO">
+	select a.BO_NM, a.CATE_CD, a.EMP_ID, a.BO_TITLE, a.BO_CON, to_char(a.BO_DATE, 'YYYY-MM-DD') as bo_date, 
+		   b.emp_name, b.EMP_JOB, b.emp_name || ' ' || b.EMP_JOB as bo_writer 
+	  from board a, EMPLOYEES b
+	 where A.EMP_ID = b.EMP_ID
+	   and A.bo_nm = #{boNm}
+</select>
+
+<select id = "selectNoticeList" parameterType="boardVO" resultType = "boardVO">
+	select a.BO_NM, a.CATE_CD, a.EMP_ID, a.BO_TITLE, a.BO_CON, to_char(a.BO_DATE, 'YYYY-MM-DD') as bo_date,
+		   b.emp_name, b.EMP_JOB, '대덕인재동물병원'  as bo_writer 
+	  from board a, EMPLOYEES b
+     where A.EMP_ID = b.EMP_ID
+       and A.CATE_CD = #{noticeCd}
+  order by A.bo_date desc
+</select>
+
+<select id = "selectGyeongjosaList" parameterType="String" resultType = "boardVO">
+	select a.BO_NM, a.CATE_CD, a.EMP_ID, a.BO_TITLE, a.BO_CON, to_char(a.BO_DATE, 'YYYY-MM-DD') as bo_date, a.bo_HIT
+		   , b.emp_name, b.EMP_JOB, b.emp_name || ' ' || b.EMP_JOB as bo_writer 
+	  from board a, EMPLOYEES b
+     where A.EMP_ID = b.EMP_ID
+       and A.CATE_CD = #{gyeongjosaCd}
+       order by A.bo_date desc
+</select>
+
+<select id = "selectComplainList" parameterType="String" resultType = "boardVO">
+	select a.BO_NM, a.CATE_CD, a.EMP_ID, a.BO_TITLE, a.BO_CON, to_char(a.BO_DATE, 'YYYY-MM-DD') as bo_date
+		   , b.emp_name, b.EMP_JOB, b.emp_name || ' ' || b.EMP_JOB as bo_writer 
+	  from board a, EMPLOYEES b
+     where A.EMP_ID = b.EMP_ID
+       and A.CATE_CD = #{complainCd}
+       order by A.bo_date desc
+</select>
+
+<select id = "selectAcademicList" parameterType="String" resultType = "boardVO">
+	select a.BO_NM, a.CATE_CD, a.EMP_ID, a.BO_TITLE, a.BO_CON, to_char(a.BO_DATE, 'YYYY-MM-DD') as bo_date
+		  , b.emp_name, b.EMP_JOB, b.emp_name || ' ' || b.EMP_JOB as bo_writer 
+	  from board a, EMPLOYEES b
+     where A.EMP_ID = b.EMP_ID
+       and A.CATE_CD = #{academicCd}
+       order by A.bo_date desc
+</select>
+
+<select id = "selectBoard2" parameterType="boardVO" resultType = "boardVO">
+	select a.BO_NM, a.CATE_CD, a.EMP_ID, a.BO_TITLE, a.BO_CON, to_char(a.BO_DATE, 'YYYY-MM-DD') as bo_date
+	       , b.emp_name, b.EMP_JOB, b.emp_name || ' ' || b.EMP_JOB as bo_writer 
+	  from board a, EMPLOYEES b
+	 where A.EMP_ID = b.EMP_ID
+	   and A.bo_nm = #{boNm}
+</select>
+
+<select id = "newBoardList" resultType="boardVO">
+	<![CDATA[
+		select a.BO_NM, a.CATE_CD, a.EMP_ID, a.BO_TITLE, a.BO_CON, to_char(a.BO_DATE, 'YYYY-MM-DD') as bo_date
+			   , b.emp_name, b.EMP_JOB, b.emp_name || ' ' || b.EMP_JOB as bo_writer 
+		  from board a, EMPLOYEES b
+		 where A.EMP_ID = b.EMP_ID
+	    order by A.BO_DATE desc	
+	]]>
+</select>
+
+
+<delete id = "deleteBoard" parameterType="int">
+	delete board where bo_nm = #{boNm} 
+</delete>
+
+<insert id = "insertReply" parameterType="replyVO">
+	<selectKey keyProperty="replyNm" order = "BEFORE" resultType="int">
+		select REPLY_SEQ.NEXTVAL from dual
+	</selectKey>
+	insert into reply (REPLY_NM, BO_NM, CATE_CD, EMP_ID, REPLY_CON, REPLY_DATE) 
+		   values (#{replyNm}, #{boNm}, 2, #{empId}, #{replyCon}, sysdate)
+</insert>
+
+<select id = "replyList" resultType="replyVO" parameterType="replyVO">
+	select a.*, b.emp_name, b.emp_job, b.emp_profile  
+	  from REPLY a, EMPLOYEES b
+	 where A.EMP_ID = b.EMP_ID
+	   and A.BO_NM = #{boNm}
+</select>
+
+<update id = "updateBoard" parameterType="int">
+	update board set bo_hit = (select bo_hit from board where bo_nm = #{boNm}) + 1 where bo_nm = #{boNm}
+</update>
+
+
+<insert id = "memoInsert" parameterType="empMemoVO">
+	insert into emp_memo (EMP_MEMO_NM, EMP_ID, EMP_MEMO_DATE, EMP_MEMO_CON, EMP_MEMO_CHECK) 
+	values (EMP_MEMO_SEQ.nextval, #{empId}, sysdate, #{empMemoCon}, 'N')
+</insert>
+
+<select id = "memoList" parameterType="string" resultType="empMemoVO">
+	select EMP_MEMO_NM, EMP_ID, to_char(EMP_MEMO_DATE, 'YYYY-MM-DD') as EMP_MEMO_DATE, EMP_MEMO_CON, EMP_MEMO_CHECK from emp_memo where emp_id = #{empId}
+</select>
+
+<delete id = "memoDelete" parameterType="int">
+	delete emp_memo where emp_memo_nm = #{empMemoNm}
+</delete>
+
+<update id = "memoCheckUpdate" parameterType="empMemoVO">
+	update emp_memo set emp_memo_check = #{empMemoCheck} where emp_memo_nm = #{empMemoNm}
+</update>
+
+<select id = "alarmList" parameterType="string" resultType="alarmVO">
+	select * from alarm where emp_id = #{empId} order by alarm_date desc
+</select>
+
+
+</mapper>

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.mapper.DrugMapper">
+
+	<select id="drugList" resultType="drugVO">
+		<![CDATA[
+			select    
+				DRUG_NM             ,
+				DRUG_IO             ,
+				ITEM_NAME           ,
+				ITEM_ENG_NAME       ,
+				DRUG_AMOUNT         ,
+				DRUG_PRICE          ,
+				to_char(DRUG_STOCK_DATE, 'yyyy-MM-dd') as DRUG_STOCK_DATE,
+				ENTP_NAME           ,
+				FROM_CODE_NAME      ,
+				ITEM_SEQ            ,
+				CLASS_NO            ,
+				ITEM_PERMIT_DATE,
+				CLASS_NAME          ,
+				CHART               ,
+				ITEM_IMAGE          ,
+				IMG_REGIST_TS       ,
+				PRINT_FRONT         ,
+				PRINT_BACK          ,
+				LENG_LONG           ,
+				LENG_SHORT          ,
+				THICK               ,
+				ETC_OTC_NAME        ,
+				MARK_CODE_FRONT_ANAL,
+				MARK_CODE_BACK_ANAL ,
+				MARK_CODE_FRONT     ,
+				MARK_CODE_BACK      ,
+				DRUG_SHAPE          ,
+				CHANGE_DATE,
+				DRUG_COST_PRICE
+			from drug
+			order by item_seq
+		]]>
+	</select>
+	
+	<select resultType="DrugVO" id="selectMedicDrugList">
+		<![CDATA[
+			SELECT * FROM DRUG
+			ORDER BY ITEM_SEQ
+		]]>
+	</select>
+	
+	<select resultType="DrugVO" id="selectMedicPreOutList">
+		<![CDATA[
+			SELECT * FROM DRUG
+			WHERE DRUG_IO='O'
+			ORDER BY ITEM_SEQ
+		]]>
+	</select>
+	
+	<select resultType="DrugVO" id="selectMedicPreInList">
+		<![CDATA[
+			SELECT * FROM DRUG
+			WHERE DRUG_IO='I'
+			ORDER BY ITEM_SEQ
+		]]>
+	</select>
+	
+	<update parameterType="map" id="consumeDrug">
+		UPDATE DRUG
+		SET DRUG_AMOUNT=DRUG_AMOUNT-(TO_NUMBER(#{amount})*TO_NUMBER(#{count}))
+		WHERE DRUG_NM=#{drugNm}
+	</update>
+	
+	<update id="DrugMapper_updateAmount" parameterType="daDetailVO">
+		update drug
+		set 
+			drug_amount = drug_amount + to_number(#{daDtAmount})
+		where
+			drug_nm = to_number(#{drugNm})	
+	</update>
+	
+	<select id="DrugMapper_drugListOrderByAmount" resultType="drugVO">
+		<![CDATA[
+			select    
+				DRUG_NM             ,
+				DRUG_IO             ,
+				ITEM_NAME           ,
+				ITEM_ENG_NAME       ,
+				DRUG_AMOUNT         ,
+				DRUG_PRICE          ,
+				to_char(DRUG_STOCK_DATE, 'yyyy-MM-dd') as DRUG_STOCK_DATE,
+				ENTP_NAME           ,
+				FROM_CODE_NAME      ,
+				ITEM_SEQ            ,
+				CLASS_NO            ,
+				ITEM_PERMIT_DATE,
+				CLASS_NAME          ,
+				CHART               ,
+				ITEM_IMAGE          ,
+				IMG_REGIST_TS       ,
+				PRINT_FRONT         ,
+				PRINT_BACK          ,
+				LENG_LONG           ,
+				LENG_SHORT          ,
+				THICK               ,
+				ETC_OTC_NAME        ,
+				MARK_CODE_FRONT_ANAL,
+				MARK_CODE_BACK_ANAL ,
+				MARK_CODE_FRONT     ,
+				MARK_CODE_BACK      ,
+				DRUG_SHAPE          ,
+				CHANGE_DATE,
+				DRUG_COST_PRICE
+			from drug
+			order by drug_amount
+		]]>
+	</select>
+
+</mapper>

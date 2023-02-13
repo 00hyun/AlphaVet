@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.mapper.EnterMapper">
+   
+   <!-- 각 탭 별 동물 리스트 -->
+   <select id="dogList" resultType="enterPatiVO">
+   <![CDATA[
+      select a.ST_CD, a.PAT_ID, a.CAGE_NM, a.CLI_CD, a.EMP_ID, a.ST_START_DATE, a.ST_END_DATE, 
+            a.ST_TOTAL, b.PAT_NAME
+      from stay a join patient b 
+           on a.pat_id = b.PAT_ID
+           join animal c
+           on b.ANIMAL_CD = c.ANIMAL_CD
+      where c.animal_type = 'dog' and a.st_state = 'Y'
+      ]]>
+   </select>
+   <select id="catList" resultType="enterPatiVO">
+   <![CDATA[
+      select a.ST_CD, a.PAT_ID, a.CAGE_NM, a.CLI_CD, a.EMP_ID, a.ST_START_DATE, a.ST_END_DATE, 
+            a.ST_TOTAL, b.PAT_NAME
+      from stay a join patient b 
+           on a.pat_id = b.PAT_ID
+           join animal c
+           on b.ANIMAL_CD = c.ANIMAL_CD
+      where c.animal_type = 'cat' and a.st_state = 'Y'
+      ]]>
+   </select>
+   <select id="etcList" resultType="enterPatiVO">
+   <![CDATA[
+      select a.ST_CD, a.PAT_ID, a.CAGE_NM, a.CLI_CD, a.EMP_ID, a.ST_START_DATE, a.ST_END_DATE, 
+            a.ST_TOTAL, b.PAT_NAME
+      from stay a join patient b 
+           on a.pat_id = b.PAT_ID
+           join animal c
+           on b.ANIMAL_CD = c.ANIMAL_CD
+      where c.animal_type = 'etc' and a.st_state = 'Y'
+      ]]>
+   </select>
+   
+   <!-- 등록된 입원 병동 리스트 -->
+   <select id="wardList" resultType="enterVO">
+   <![CDATA[
+		select ward_name, ward_nm 
+		from ward
+      ]]>
+   </select>
+
+	<!-- 병동별 동물 리스트 -->
+   <select id="aniList" resultType="enterVO" parameterType="int">
+   <![CDATA[
+		select a.st_cd, a.cage_nm, a.st_start_date, b.pat_name, d.ward_name, d.ward_nm, a.pra_cd
+		from stay a join patient b 
+		     on a.pat_id = b.pat_id
+		     join cage c 
+		     on a.cage_nm = c.cage_nm
+		     join ward d 
+		     on c.WARD_NM = d.WARD_NM
+		where d.ward_nm = #{wardNm} and a.st_state = 'Y'
+		order by a.cage_nm     
+		
+      ]]>
+   </select>
+   
+   <!-- 개별 동물 정보 -->
+   <select id="enterInfo" parameterType="String" resultType="enterVO">
+          <![CDATA[
+    select a.ST_CD, a.PAT_ID, a.CAGE_NM, a.CLI_CD, a.EMP_ID, TO_CHAR(a.ST_START_DATE, 'yyyy-mm-dd HH24:MI') as stStartDate,
+    b.PAT_PROFILE, a.ST_END_DATE, a.ST_TOTAL, b.PAT_NAME, b.PAT_BIRTH, b.PAT_WEIGHT, b.animal_cd, b.pat_memo, c.mem_name, c.mem_tel, d.pra_con, a.pra_cd
+    from stay a join patient b on a.pat_id = b.PAT_ID 
+    join member c on b.mem_id = c.mem_id 
+    join pra d on a.pra_cd = d.pra_cd 
+    where a.ST_CD = #{stCd} and 
+        a.st_state = 'Y'
+       ]]>   
+   </select>
+   
+   
+   <!-- 동물 퇴원 시키기 -->
+<!--       <delete id="enterRemove" parameterType="String"> -->
+<!--       delete from stay where st_cd = #{stCd} -->
+<!--    </delete> -->
+	<update id="enterRemove" parameterType="String">
+		UPDATE STAY SET ST_TOTAL = (ST_DAYS * 80000) + ST_FOOD_TOTAL, ST_END_DATE = SYSDATE, ST_STATE = 'N' WHERE ST_CD = #{stCd} 
+	</update>
+	
+	<update id="enterDeleteCage" parameterType="int">
+		UPDATE CAGE SET CAGE_STATUS = '0' WHERE CAGE_NM= #{cageNm}
+	</update>
+	
+	<!-- 퇴원 시 수납대기로 상태 변경 -->
+<!-- 	<insert id="insertRec" parameterType="enterVO">
+	insert into receipt (REC_NM, PRA_ROOM_NM, PAT_ID, ANIMAL_CD, REC_DATE, REC_PURPOSE, REC_STATUS) 
+	VALUES(receipt_seq.nextval, '0', #{patId}, #{animalCd}, SYSDATE, '입원 결제', '수납대기')
+	</insert> -->
+	<update id="insertRec" parameterType="String">
+	    update receipt set rec_status = '수납대기'
+        where rec_nm = (select rec_nm
+                          from pra
+                         where pra_cd = #{praCd})
+	</update>
+	
+	
+
+   <!-- 일지 리스트 -->
+   <select id="enterNoteList" resultType="enterVO">
+   <![CDATA[
+ SELECT A.SN_NM, B.PAT_ID, B.CAGE_NM, C.PAT_NAME, E.WARD_NAME, A.ST_CD, TO_CHAR(A.SN_DATE, 'yyyy-mm-dd') as snDate, A.SN_SPECAL, 
+            A.ST_PRICE, A.SN_CON, A.SN_HEALTH_STATE, A.SN_TEMP_STATE, A.SN_POO_STATE
+      FROM STAY_NOTE A JOIN STAY B
+           ON A.ST_CD = B.ST_CD
+           JOIN PATIENT C
+           ON B.PAT_ID = C.PAT_ID
+           JOIN CAGE D
+           ON B.CAGE_NM = D.CAGE_NM
+           JOIN WARD E
+           ON D.WARD_NM = E.WARD_NM
+      WHERE B.ST_STATE = 'Y'
+      ORDER BY A.SN_NM     
+   ]]>
+   </select>
+
+   <!-- 동물 일지 리스트 -->
+   <select id="aniEnterNoteList" resultType="enterVO">
+   <![CDATA[
+ SELECT A.SN_NM, B.PAT_ID, B.CAGE_NM, C.PAT_NAME, E.WARD_NAME, A.ST_CD, TO_CHAR(A.SN_DATE, 'yyyy-mm-dd') as snDate, A.SN_SPECAL, 
+            A.ST_PRICE, A.SN_CON, A.SN_HEALTH_STATE, A.SN_TEMP_STATE, A.SN_POO_STATE
+      FROM STAY_NOTE A JOIN STAY B
+           ON A.ST_CD = B.ST_CD
+           JOIN PATIENT C
+           ON B.PAT_ID = C.PAT_ID
+           JOIN CAGE D
+           ON B.CAGE_NM = D.CAGE_NM
+           JOIN WARD E
+           ON D.WARD_NM = E.WARD_NM
+      WHERE B.ST_STATE = 'Y' AND A.ST_CD = #{stCd}
+      ORDER BY A.SN_NM     
+   ]]>
+   </select>
+   
+   
+   <!-- 일지 등록 -->
+   <insert id="insertRecord" parameterType="enterVO" useGeneratedKeys="true">
+   <selectKey keyProperty="snNm" order="BEFORE" resultType="int">
+      SELECT STAYNOTE_SEQ.NEXTVAL FROM DUAL 
+   </selectKey>
+   INSERT INTO STAY_NOTE (SN_NM, ST_CD, SN_DATE, SN_SPECAL, SN_CON, SN_HEALTH_STATE, SN_TEMP_STATE, SN_POO_STATE, ST_PRICE, EMP_ID) 
+   VALUES (#{snNm}, #{stCd}, SYSDATE, #{snSpecal}, #{snCon}, #{snHealthState}, #{snTempState}, #{snPooState}, '80000', #{empId})
+   </insert>
+
+   <!-- 일지 등록시 St_days 입원 날짜 업데이트 -->
+   <update id="updateEnterDays" parameterType="enterVO">
+  	 UPDATE STAY SET ST_DAYS = ST_DAYS + '1' WHERE ST_CD = #{stCd}
+   </update>
+   
+   <!-- 식이 등록 -->
+   <insert id="insertFood" parameterType="enterVO">
+   INSERT INTO FOOD_DETAIL (FOOD_DT_NM, ST_CD, FOOD_NM, FOOD_DATE, FOOD_PRICE) VALUES (FOOD_DETAIL_SEQ.NEXTVAL, #{stCd}, #{foodNm}, to_date(#{foodDate}, 'YYYY/MM/DDHH24/MI'), #{foodPrice})
+   </insert>
+   
+   <!-- stay 식이 횟수, 식이 가격 업데이트 -->
+   <update id="updateFoodPrice" parameterType="enterVO">
+	UPDATE STAY SET ST_FOOD_NUM = ST_FOOD_NUM + '1', ST_FOOD_TOTAL = ST_FOOD_TOTAL + #{foodPrice} WHERE ST_CD = #{stCd}
+   </update>
+   
+   <!-- 처방 등록-->
+   <insert id="insertMedi" parameterType="enterVO">
+   INSERT INTO INJECTION (INJ_NM, ST_CD, DRUG_NM, INJ_AMOUNT, INJ_DATE) VALUES (INJECTION_SEQ.NEXTVAL, #{stCd}, ${drugNm}, #{injAmount}, to_date(#{injDate}, 'YYYY/MM/DDHH24/MI'))
+   </insert>
+   
+   
+   <!-- 환자 별 처방 리스트 가져오기 -->
+   <select id="readPreIn" parameterType="String" resultType="enterVO">
+   <![CDATA[
+      select A.PRE_NM, A.PRA_CD, A.DRUG_NM, A.PRE_IN_TYPE, A.DRUG_TYPE, A.PRE_IN_AMOUNT, A.PRE_IN_CNT, A.PRE_IN_PRICE, D.ITEM_NAME
+      from PRE_IN A JOIN PRA B ON A.PRA_CD = B.PRA_CD
+           JOIN STAY C ON B.PRA_CD = C.PRA_CD
+           JOIN DRUG D ON D.DRUG_NM = A.DRUG_NM
+      where c.ST_CD = #{stCd} 
+   ]]>
+   </select>
+
+
+   <!-- 식이 목록 가져오기 -->
+   <select id="readFood" resultType="enterVO" parameterType="String">
+   <![CDATA[
+      select * 
+      from food
+      where food_amount > 0
+   ]]>
+   </select>
+      
+   
+   <!-- 일지 읽기 -->
+   <select id="getRecord" parameterType="int" resultType="enterVO">
+   <![CDATA[
+      select  
+         a.SN_NM, a.ST_CD, to_char(b.st_start_date,'yyyy-MM-dd') as stStartDate, a.SN_DATE, a.SN_SPECAL, a.SN_CON, a.SN_HEALTH_STATE, a.SN_TEMP_STATE, a.SN_POO_STATE,
+         c.pat_name, c.pat_birth, d.pra_con, e.emp_name, (select d.emp_name from employees d join stay_note a on d.emp_id = a.emp_id where a.sn_nm=#{snNm}) as empWriter
+      from stay_note a join stay b
+     	 on a.st_cd = b.st_cd
+      join patient c 
+     	 on b.pat_id = c.pat_id
+      join pra d
+      	on b.pra_cd = d.pra_cd
+      join employees e
+      	on d.emp_id = e.emp_id
+      where sn_nm = #{snNm}
+   ]]>
+   </select>
+   
+   <!-- 오늘 식이 리스트 -->
+   <select id="todayFoodList" parameterType="string" resultType="enterVO">
+   <![CDATA[
+  	  SELECT
+      A.FOOD_DT_NM, A.ST_CD, A.FOOD_NM, TO_CHAR(A.FOOD_DATE, 'HH24:MI') as foodDate, B.FOOD_NAME, B.FOOD_AMOUNT, B.FOOD_PRICE
+      from FOOD_DETAIL A JOIN FOOD B
+      ON A.FOOD_NM = B.FOOD_NM
+      where a.st_cd = #{stCd}
+      and to_char(A.FOOD_DATE, 'yyyy-MM-dd') =  to_char(sysdate,'yyyy-MM-dd')
+      order by A.FOOD_DT_NM
+   ]]>
+   </select>
+
+   <!-- 오늘 투약 리스트 -->
+   <select id="todayMediList" parameterType="string" resultType="enterVO">
+   <![CDATA[
+  	  select 
+      A.INJ_NM, A.ST_CD, A.DRUG_NM, A.INJ_TYPE, A.INJ_AMOUNT, TO_CHAR(A.INJ_DATE, 'HH24:MI') as injDate, B.ITEM_NAME, B.DRUG_PRICE
+      from injection A JOIN DRUG B
+      ON A.DRUG_NM = B.DRUG_NM
+      where a.st_cd = #{stCd}
+      and to_char(A.INJ_DATE, 'yyyy-MM-dd') =  to_char(sysdate,'yyyy-MM-dd')
+   ]]>
+   </select>
+   
+   <!-- 일지 - 투약 리스트  -->
+   <select id="enterMediList" parameterType="string" resultType="enterVO">
+   <![CDATA[
+      select 
+      A.INJ_NM, A.ST_CD, A.DRUG_NM, A.INJ_TYPE, A.INJ_AMOUNT, TO_CHAR(A.INJ_DATE, 'yyyy-mm-dd HH24:MI') as injDate, B.ITEM_NAME, B.DRUG_PRICE
+      from injection A JOIN DRUG B
+      ON A.DRUG_NM = B.DRUG_NM
+      where A.ST_CD = #{stCd}
+      and to_char(A.INJ_DATE, 'yyyy-MM-dd') = #{snDate}
+   ]]>
+   </select>
+   
+   <!-- 일지 - 식이 리스트  -->
+   <select id="enterFoodList" parameterType="string" resultType="enterVO">
+   <![CDATA[
+   	 SELECT
+      A.FOOD_DT_NM, A.ST_CD, A.FOOD_NM, TO_CHAR(A.FOOD_DATE, 'yyyy-mm-dd HH24:MI') as foodDate, B.FOOD_NAME, B.FOOD_AMOUNT, B.FOOD_PRICE
+      from FOOD_DETAIL A JOIN FOOD B
+      ON A.FOOD_NM = B.FOOD_NM
+      where A.ST_CD = #{stCd}
+      and to_char(A.FOOD_DATE, 'yyyy-MM-dd') = #{snDate}
+      order by A.FOOD_DT_NM
+   ]]>
+   </select>
+
+
+   <!-- 일지 삭제 -->
+      <delete id="delRecord" parameterType="int">
+      delete from stay_note where sn_nm = #{snNm}
+   </delete>
+   
+   <!-- 일지 수정 -->
+   <update id="updateRecord" parameterType="enterVO">
+      UPDATE STAY_NOTE SET SN_SPECAL = #{snSpecal}, SN_CON = #{snCon}, SN_HEALTH_STATE = #{snHealthState}, SN_TEMP_STATE = #{snTempState}, SN_POO_STATE = #{snPooState} 
+      WHERE SN_NM = #{snNm}
+   </update>
+   
+   <!-- 환자별 중간 수납 금액 가져오기 (처방 금액, 식이 총 금액)-->
+   <select id = "readPrice" parameterType="String" resultType="enterVO">
+  	  select b.pre_in_total, a.st_food_total, a.st_days, a.st_food_num
+      from stay a join pra b
+      on a.pra_cd = b.pra_cd
+      where a.st_cd = #{stCd} 
+   </select>
+   
+   <!-- 환자별 총 식이 리스트 -->
+	<select id="readAllFoodList" parameterType="String" resultType="enterVO">
+		select TO_CHAR(a.food_date, 'yyyy-mm-dd HH24:MI') as foodDate, a.food_price, b.food_name 
+		from food_detail a join food b on a.food_nm = b.food_nm 
+		where st_cd = #{stCd} 
+		order by a.food_date
+	</select>
+   
+   <!-- 환자별 중간 수납 금액 가져오기 (입원 일자 * 입원 비)-->
+   <select id="readPriceEnter" parameterType="String" resultType="enterVO">
+   		select st_price from stay_note where st_cd=#{stCd}
+   </select>
+   
+   
+</mapper>

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co">
+	
+	
+	
+	<resultMap type="chatRoomVO" id="chatRoomMap">
+		<result property="chRoomNm" column="CH_ROOM_NM"/>
+		<result property="chRoomName" column="CH_ROOM_NAME"/>
+		<result property="chPersonnel" column="CH_PERSONNEL"/>
+		<result property="chCon" column="CH_CON"/>
+		<result property="chDate" column="CH_DATE"/>
+		<collection property="chatEmpList" resultMap="chatEmpMap"></collection>
+	</resultMap>
+	<resultMap type="chatEmpVO" id="chatEmpMap">
+		<result property="empId" column="EMP_ID"/>
+		<result property="empName" column="EMP_NAME"/>
+	</resultMap>
+	
+	<select id="ChatMapper_chatRoomList" parameterType="string" resultMap="chatRoomMap">
+		SELECT * 
+		FROM (
+			SELECT
+			    A.CH_ROOM_NM,
+			    A.CH_ROOM_NAME,
+			    A.CH_PERSONNEL,
+			    B.EMP_ID,
+			    C.EMP_NAME,
+			    D.CH_CON,
+			    D.CH_DATE,
+			    RANK() OVER (PARTITION BY A.CH_ROOM_NM ORDER BY D.CH_DATE DESC) AS RANK
+			FROM
+			    CHAT_ROOM A,
+			    CHAT_EMP B,
+			    EMPLOYEES C,
+			    CHAT_CONTENT D
+			WHERE
+			    B.CH_ROOM_NM = A.CH_ROOM_NM
+			AND
+			    D.CH_ROOM_NM = A.CH_ROOM_NM
+			AND
+			    C.EMP_ID = B.EMP_ID
+			AND
+			    A.CH_ROOM_NM IN (SELECT CH_ROOM_NM FROM CHAT_EMP WHERE EMP_ID = #{empId})
+			)
+		WHERE RANK = 1
+		ORDER BY CH_DATE DESC
+	</select>
+	
+	<select id="ChatMapper_chatContent" parameterType="int" resultType="chatContentVO">
+		SELECT
+		    A.*,
+		    B.EMP_PROFILE,
+		    B.EMP_NAME
+		FROM 
+		    CHAT_CONTENT A,
+		    EMPLOYEES B
+		WHERE
+		    CH_ROOM_NM = #{chRoomNm}
+		AND
+		    B.EMP_ID = A.EMP_ID
+		ORDER BY CH_DATE
+	</select>
+	
+	<insert id="ChatMapper_insertChat" parameterType="chatContentVO" useGeneratedKeys="true">
+		<selectKey order="BEFORE" keyProperty="chContentNm" resultType="int">
+			SELECT CHAT_CONTENT_SEQ.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO CHAT_CONTENT(
+			CH_CONTENT_NM, CH_ROOM_NM, EMP_ID, CH_CON, CH_DATE, CH_CHECK
+		)VALUES (
+			#{chContentNm}, #{chRoomNm}, #{empId}, #{chCon}, sysdate, 'N'
+		)
+	</insert>
+	
+	<select id="ChatMapper_selectChat" parameterType="int" resultType="chatContentVO">
+		SELECT
+		    A.*,
+		    B.EMP_PROFILE,
+		    B.EMP_NAME
+		FROM 
+		    CHAT_CONTENT A,
+		    EMPLOYEES B
+		WHERE
+		    CH_CONTENT_NM = #{chContentNm}
+		AND
+		    B.EMP_ID = A.EMP_ID
+	</select>
+	
+	<insert id="ChatMapper_makeChatRoom" parameterType="chatRoomVO" useGeneratedKeys="true">
+		<selectKey order="BEFORE" keyProperty="chRoomNm" resultType="int">
+			SELECT CHAT_ROOM_SEQ.NEXTVAL FROM DUAL
+		</selectKey>
+		INSERT INTO CHAT_ROOM(
+			CH_ROOM_NM, CH_PERSONNEL, CH_ROOM_NAME
+		)VALUES(
+			#{chRoomNm}, #{chPersonnel}, #{chRoomName}
+		)
+	</insert>
+	
+	<insert id="ChatMapper_insertChatEmpId" parameterType="map">
+		INSERT INTO CHAT_EMP(
+			CH_EMP_NM, CH_ROOM_NM, EMP_ID
+		)VALUES(
+			CHAT_EMP_SEQ.NEXTVAL, #{chRoomNm}, #{empId}
+		)
+	</insert>
+	
+	<insert id="ChatMapper_insertFirstChat" parameterType="int">
+		INSERT INTO CHAT_CONTENT(
+			CH_CONTENT_NM, CH_ROOM_NM, EMP_ID, CH_CON, CH_DATE
+		)VALUES (
+			CHAT_CONTENT_SEQ.NEXTVAL, #{chRoomNm}, 'ALPHAVET-SERVER', '[채팅이 생성되었습니다]', SYSDATE 
+		)
+	</insert>
+	
+</mapper>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co">
+
+	<select id="FacilityMapper_listPraRoom" resultType="pra_RoomVO" parameterType="string">
+		select * from pra_room where cli_cd = #{cliCd}
+	</select>
+	
+	<select id="FacilityMapper_listSurRoom" resultType="surRoomVO" parameterType="string">
+		select * from sur_room where cli_cd = #{cliCd}
+	</select>
+	
+	<select id="FacilityMapper_listWard" resultType="wardVO" parameterType="string">
+		select * from ward where cli_cd = #{cliCd}
+	</select>
+	
+	<select id="FacilityMapper_listCage" resultType="cageVO" parameterType="string">
+		select a.* 
+		from cage a, ward b 
+		where a.ward_nm = b.ward_nm and b.cli_cd= #{cliCd}
+	</select>
+
+</mapper>

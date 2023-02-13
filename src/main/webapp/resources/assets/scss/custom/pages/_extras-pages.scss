@@ -1,0 +1,104 @@
+// 
+// Extras pages.scss
+//
+
+
+// pricing
+
+.price-plan {
+  border-top: 2px dashed $gray-300 !important;
+  border-bottom: 2px dashed $gray-300 !important;
+}
+
+  .lable-name {
+    position: absolute;
+    background-color: $primary;
+    color: $white;
+    font-size: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 40px;
+    width: 90px;
+    top: 0;
+    right: 0;
+    -webkit-transform: rotate(-90deg) translateX(-27%);
+    transform: rotate(-90deg) translateX(-27%);
+    &:after {
+      content: "";
+      border-top: 20px solid $primary;
+      border-bottom: 20px solid $primary;
+      border-right: 11px solid transparent;
+      border-left: 11px solid transparent;
+      position: absolute;
+      left: -11px;
+      top: 0;
+    }
+  }
+
+
+  // FAQ
+
+  .faq-tab-box{
+    .nav-link{
+      padding: 16px 20px;
+      &.active{
+        h5{
+          color: $primary !important;
+        }
+      }
+    }
+  }
+  
+
+
+
+// **************
+// error 404
+// **************
+
+
+
+.error-svg{
+  svg {
+    font: 11rem 'IBM Plex Sans';
+  }
+}
+  
+  
+  .text {
+    fill: none;
+    stroke: $white;
+    stroke-dasharray: 8% 30%;
+    stroke-width: 5px;
+    stroke-dashoffset: 1%;
+    animation: stroke-offset 5.5s infinite linear;
+    &:nth-child(1){
+        stroke: $primary;
+        animation-delay: -1;
+    }
+    &:nth-child(2){
+        stroke: $primary;
+      animation-delay: -2s;
+    }
+    &:nth-child(3){
+        stroke: $primary;
+        animation-delay: -3s;
+    }
+    &:nth-child(4){
+        stroke: $primary;
+  animation-delay: -4s;
+    }
+    &:nth-child(5){
+        stroke: $primary;
+        animation-delay: -5s;
+    }
+  }
+  
+  
+  
+  @keyframes stroke-offset{
+  100% {
+    stroke-dashoffset: -35%;
+  }
+  }

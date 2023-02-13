@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.mapper.TestDetailMapper">
+
+	<select resultType="TestDetailVO" parameterType="string" id="selectTestDetailList">
+		SELECT * FROM TEST_DETAIL
+		WHERE PRA_CD=#{praCd}
+	</select>
+
+	<insert parameterType="map" id="insertTestDetail">
+		INSERT INTO TEST_DETAIL(
+		    TD_NM, PRA_CD, TEST_CD, TD_DATE
+		)
+		
+		VALUES(
+		    TEST_DETAIL_SEQ.NEXTVAL,
+		    (
+				select b.pra_cd
+				from receipt a, pra b
+						where a.rec_nm = b.rec_nm
+						and b.emp_id=#{empId}
+						and a.rec_status = '진료중'	
+			),
+		    #{testCd},
+		    SYSDATE
+		)
+	</insert>
+	
+</mapper>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.mapper.PreInMapper">
+
+	<select resultType="PreInVO" parameterType="string" id="selectPreInList">
+		SELECT * FROM PRE_IN
+		WHERE PRA_CD=#{praCd}
+	</select>
+
+	<insert parameterType="map" id="insertPreIn">
+		INSERT INTO PRE_IN(
+		    PRE_NM,
+			PRA_CD,
+			DRUG_NM,
+			PRE_IN_AMOUNT,
+			PRE_IN_CNT,
+			PRE_IN_DAYS,
+			PRE_IN_PRICE
+		)
+		
+		VALUES(
+		    PRE_IN_SEQ.NEXTVAL,
+		    (
+		    	SELECT PRA_CD FROM PRA
+				WHERE REC_NM=#{recNm}
+		    ),
+		    #{drugNm},
+		    #{amount},
+		    #{count},
+		    #{days},
+		    #{amount}*#{count}*#{days}*(
+		    	SELECT DRUG_PRICE FROM DRUG WHERE DRUG_NM=#{drugNm}
+		    )
+		)
+	</insert>
+	
+</mapper>

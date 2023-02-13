@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.mapper.PatientMapper">
+
+	<select resultType="PatientVO" parameterType="string" id="selectPatient">
+		SELECT * FROM PATIENT
+		WHERE PAT_ID = #{patId}
+	</select>
+	
+	<select resultType="PatientVO" parameterType="string" id="selectPatientInMedic">
+		SELECT PT.*
+		FROM PATIENT PT
+		WHERE PT.PAT_ID=(
+		    SELECT RC.PAT_ID
+		    FROM RECEIPT RC
+		         INNER JOIN PRA P
+		         ON P.REC_NM=RC.REC_NM
+		    WHERE RC.REC_STATUS='진료중'
+		    	  AND TO_CHAR(RC.REC_DATE)=TO_CHAR(SYSDATE)
+		          AND TO_CHAR(P.PRA_DATE)=TO_CHAR(SYSDATE)
+		          AND P.EMP_ID=#{empId}
+		)
+	</select>
+
+	<select id="PatientMapper_patientList" resultType="memPatiVO">
+		<![CDATA[
+			SELECT 
+				A.*, 
+				B.*, 
+				NVL(C.ST_STATE, 'N') AS PAT_STAY_CHECK
+			FROM PATIENT A 
+				LEFT OUTER JOIN MEMBER B ON A.MEM_ID = B.MEM_ID
+				LEFT OUTER JOIN STAY C ON A.PAT_ID = C.PAT_ID
+		]]>
+	</select>
+	
+	<select id="PatientMapper_selectPat" parameterType="string" resultType="memPatiVO">
+		SELECT * FROM PATIENT, MEMBER
+		WHERE PATIENT.PAT_ID = #{patId}
+		AND PATIENT.MEM_ID = MEMBER.MEM_ID
+	</select>
+	
+	<update id="PatientMapper_updatePat" parameterType="memPatiVO">
+		update patient
+		set
+			animal_cd = #{animalCd},
+			pat_name = #{patName},
+			pat_birth = #{patBirth},
+			pat_gender = #{patGender},
+			pat_add1 = #{patAdd1},
+			pat_add2 = #{patAdd2},
+			pat_chip = 'Y',
+			pat_abandon = #{patAbandon},
+			pregnant_check = #{pregnantCheck},
+			pat_memo = #{patMemo}
+		where
+			pat_Id = #{patId}
+	</update>
+</mapper>

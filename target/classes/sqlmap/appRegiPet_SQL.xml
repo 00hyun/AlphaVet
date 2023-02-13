@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.co.mapper.RegiPetMapper">
+	<insert id="regiPet" parameterType="petVO">
+		insert into PET
+		(PET_NM, USER_ID, PET_CD, PET_NAME, PET_WEIGHT, PET_BIRTH)
+		values (#{petNm},#{userId},#{petCd},#{petName},#{petWeight},#{petBirth})
+	</insert>
+
+</mapper>

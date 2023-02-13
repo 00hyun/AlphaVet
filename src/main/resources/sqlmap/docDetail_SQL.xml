@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.mapper.DocDetailMapper">
+
+	<insert parameterType="string" id="insertDocDetail">
+		INSERT INTO DOC_DETAIL( DOC_DT_NM, PRA_CD, DOC_CD, DOC_DT_NAME)
+		
+		VALUES(
+			DOC_DETAIL_SEQ.NEXTVAL,
+			#{praCd},
+			'doc4',
+			(
+				SELECT DOC_NAME FROM DOCUMENT
+				WHERE DOC_CD='doc4'
+			)
+		)
+	</insert>
+
+</mapper>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.mapper.MedicMapper">
+
+	<select resultType="map" parameterType="string" id="selectSearchPatient">
+		SELECT MEM_TEL, PAT_ID, PAT_NAME, REC_NM
+		FROM (
+			SELECT M.MEM_TEL,
+			       PT.PAT_ID,
+			       PT.PAT_NAME,
+			       RC.REC_NM,
+			       ROW_NUMBER() OVER(ORDER BY RC.REC_NM DESC) AS RN
+			FROM MEMBER M INNER JOIN PATIENT PT
+				 ON PT.MEM_ID=M.MEM_ID
+			     INNER JOIN RECEIPT RC
+			     ON RC.PAT_ID=PT.PAT_ID
+			WHERE PT.PAT_NAME LIKE '%' || #{searchValue} || '%'
+			      AND RC.REC_STATUS != '진료대기'
+			      AND RC.REC_STATUS != '진료중'
+        )
+		WHERE RN = 1
+	</select>
+
+</mapper>
